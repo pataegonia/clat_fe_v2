@@ -1,16 +1,29 @@
 'use client'
 
-import { motion, useReducedMotion } from 'framer-motion'
+import { useEffect, useState } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import LandingImage from '@/components/landing/LandingImage'
+import StepMediaView from '@/components/landing/StepMediaView'
 import { MotionButton } from '@/components/motion/MotionButton'
-import { APP_URL } from '@/lib/landing-content'
+import { APP_URL, heroSlides } from '@/lib/landing-content'
 import { easeOut, staggerContainer, fadeUp } from '@/lib/motion-presets'
 import * as s from '@/app/landing.css'
 
 const FEATURES = ['출결 · 점수 · 과제', '학부모 알림톡', 'AI 피드백', '미완료 추적']
+const SLIDE_MS = 3500
 
 export default function HeroSection() {
   const reduceMotion = useReducedMotion()
+  const [index, setIndex] = useState(0)
+  const slide = heroSlides[index] ?? heroSlides[0]
+
+  useEffect(() => {
+    if (reduceMotion || heroSlides.length < 2) return
+    const id = window.setInterval(() => {
+      setIndex((prev) => (prev + 1) % heroSlides.length)
+    }, SLIDE_MS)
+    return () => window.clearInterval(id)
+  }, [reduceMotion])
 
   return (
     <section className={s.hero}>
@@ -20,13 +33,12 @@ export default function HeroSection() {
 
       <div className={`${s.container} ${s.heroInner}`}>
         <motion.div
+          className={s.heroCopy}
           initial={reduceMotion ? 'visible' : 'hidden'}
           animate="visible"
           variants={staggerContainer}
-          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}
         >
           <motion.div variants={fadeUp} className={s.heroBadge}>
-            <span className={s.heroBadgeDot} aria-hidden />
             학원 선생님을 위한 수업 관리 도구
           </motion.div>
 
@@ -63,25 +75,50 @@ export default function HeroSection() {
             <MotionButton href={APP_URL} className={s.ctaButtonLarge}>
               무료로 시작하기
             </MotionButton>
-            <MotionButton href="#steps" className={s.ctaButtonGhost}>
-              사용법 보기
-            </MotionButton>
           </motion.div>
+        </motion.div>
 
-          <motion.div
-            className={s.heroScreenshotWrap}
-            variants={fadeUp}
-            whileHover={reduceMotion ? undefined : { y: -8, transition: { duration: 0.35, ease: easeOut } }}
-            style={reduceMotion ? undefined : { perspective: 1200 }}
-          >
-            <LandingImage
-              src="/images/hero-screenshot.png"
-              alt="클랫 수업 템플릿 화면"
-              className={s.heroScreenshot}
-              sizes="(max-width: 768px) 100vw, 1100px"
-              priority
-            />
-          </motion.div>
+        <motion.div
+          className={s.heroVisual}
+          initial={reduceMotion ? false : { opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, ease: easeOut, delay: reduceMotion ? 0 : 0.15 }}
+        >
+          <div className={s.heroScreenshotWrap}>
+            <div className={s.heroSlideViewport} aria-live="polite">
+              <AnimatePresence mode="wait" initial={false}>
+                {slide ? (
+                  <motion.div
+                    key={slide.id}
+                    className={s.heroSlide}
+                    initial={reduceMotion ? false : { opacity: 0, x: 24 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={reduceMotion ? undefined : { opacity: 0, x: -24 }}
+                    transition={{ duration: 0.45, ease: easeOut }}
+                  >
+                    <div className={s.heroSlideMedia}>
+                      <StepMediaView media={slide.media} />
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
+            </div>
+            {heroSlides.length > 1 ? (
+              <div className={s.heroSlideDots} role="tablist" aria-label="사용법 화면">
+                {heroSlides.map((item, i) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={i === index}
+                    aria-label={`${item.step} ${item.tab}`}
+                    className={i === index ? s.heroSlideDotActive : s.heroSlideDot}
+                    onClick={() => setIndex(i)}
+                  />
+                ))}
+              </div>
+            ) : null}
+          </div>
         </motion.div>
       </div>
     </section>

@@ -1,48 +1,63 @@
 import { style } from '@vanilla-extract/css'
 import { colors } from '@/styles/tokens/colors'
+import { media } from '@/styles/tokens/breakpoints'
+import { fontStyles } from '@/styles/tokens/typography'
+import { baseCardStyleRule } from '@/styles/tokens/card'
+
+const spaceCard = baseCardStyleRule.padding as string
+const spaceSectionMobile = '56px'
+const spaceSectionDesktop = '120px'
 
 export const stepsFigmaRoot = style({
   width: '100%',
+  maxWidth: '100%',
+  overflowX: 'clip',
   backgroundColor: colors.white,
 })
 
 export const stepsIntro = style({
-  maxWidth: '720px',
+  maxWidth: '40ch',
   margin: '0 auto',
-  padding: '48px 20px 24px',
+  padding: `${spaceSectionMobile} ${spaceCard} ${spaceCard}`,
   textAlign: 'center',
   '@media': {
-    '(min-width: 768px)': { padding: '96px 32px 48px' },
+    [media.desktop]: { padding: `${spaceSectionDesktop} ${spaceCard} ${spaceSectionMobile}` },
   },
 })
 
 export const stepsIntroEyebrow = style({
-  fontSize: '14px',
+  ...fontStyles.headingSm,
   fontWeight: 700,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
   color: colors.primary500,
   marginBottom: '12px',
+  '@media': {
+    [media.desktop]: { ...fontStyles.headingMd, fontWeight: 700, color: colors.primary500 },
+  },
 })
 
 export const stepsIntroTitle = style({
-  fontSize: '24px',
-  fontWeight: 700,
+  ...fontStyles.headingMd,
   lineHeight: 1.35,
   letterSpacing: '-0.03em',
   color: colors.gray900,
   wordBreak: 'keep-all',
-  '@media': { '(min-width: 768px)': { fontSize: '40px' } },
+  maxWidth: '40ch',
+  margin: '0 auto',
+  '@media': { [media.desktop]: { fontSize: '40px', fontWeight: '700' } },
 })
 
 export const stepsIntroLead = style({
-  marginTop: '16px',
-  fontSize: '16px',
-  fontWeight: 500,
+  ...fontStyles.bodyLg,
+  marginTop: spaceCard,
   lineHeight: 1.6,
   letterSpacing: '-0.02em',
   color: colors.gray700,
-  '@media': { '(min-width: 768px)': { fontSize: '20px', marginTop: '20px' } },
+  maxWidth: '40ch',
+  marginLeft: 'auto',
+  marginRight: 'auto',
+  '@media': { [media.desktop]: { ...fontStyles.headingSm, color: colors.gray700, marginTop: spaceCard } },
 })
 
 export const stepFigmaSlide = style({
@@ -95,22 +110,21 @@ export const stepFigmaInner = style({
   zIndex: 1,
   display: 'grid',
   gridTemplateColumns: '1fr',
-  gap: '32px',
+  gap: '24px',
   alignItems: 'center',
   maxWidth: '1200px',
   margin: '0 auto',
-  padding: '36px 20px',
+  padding: '28px 20px',
   '@media': {
     '(min-width: 768px)': {
-      gap: '40px',
-      padding: '64px 40px',
+      gap: '32px',
+      padding: '40px 40px',
       maxWidth: '1320px',
     },
     '(min-width: 1024px)': {
       gridTemplateColumns: '1.05fr 0.95fr',
-      gap: '56px',
-      padding: '80px 64px',
-      minHeight: '85vh',
+      gap: '48px',
+      padding: '48px 64px',
       maxWidth: '1440px',
     },
   },
@@ -286,7 +300,7 @@ export const stepFigmaSingle = style({
   maxHeight: 'min(42vh, 420px)',
   objectFit: 'contain',
   borderRadius: '16px',
-  boxShadow: '0 8px 28px rgba(0,0,0,0.08)',
+  boxShadow: '0 8px 28px rgba(0, 0, 0, 0.08)',
   margin: '0 auto',
   '@media': {
     '(min-width: 768px)': { maxHeight: 'min(62vh, 640px)', borderRadius: '20px' },

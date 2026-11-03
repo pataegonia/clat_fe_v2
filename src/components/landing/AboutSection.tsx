@@ -17,7 +17,7 @@ export default function AboutSection() {
         <div className={s.container}>
           <div className={s.aboutHeader}>
             <h2 className={s.sectionTitle}>클랫이란?</h2>
-            <p className={s.aboutBody}>
+            <p className={s.sectionSubtitle}>
               클랫은 학원 선생님을 위한 수업 관리 도구입니다. 설치도, 미팅도 필요 없고, 가입하는
               날부터 바로 시작할 수 있어요.
             </p>

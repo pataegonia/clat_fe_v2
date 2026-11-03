@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Header from '@/components/landing/Header'
 import HeroSection from '@/components/landing/HeroSection'
-import TrustBar from '@/components/landing/TrustBar'
 import FeatureMarquee from '@/components/landing/FeatureMarquee'
 import ProblemSection from '@/components/landing/ProblemSection'
 import AboutSection from '@/components/landing/AboutSection'
@@ -28,7 +27,6 @@ export default function LandingPage() {
     <main className={s.page}>
       <Header />
       <HeroSection />
-      <TrustBar />
       <FeatureMarquee />
       <ProblemSection />
       <AboutSection />

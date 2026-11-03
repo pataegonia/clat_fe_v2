@@ -4,6 +4,7 @@ import { Fragment } from 'react'
 import StepMediaView from '@/components/landing/StepMediaView'
 import { steps } from '@/lib/landing-content'
 import * as s from '@/app/steps-figma.css'
+import * as landing from '@/app/landing.css'
 
 function cx(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(' ')
@@ -42,7 +43,7 @@ export default function StepsSection() {
       <header className={s.stepsIntro}>
         <p className={s.stepsIntroEyebrow}>사용법</p>
         <h2 className={s.stepsIntroTitle}>가입 후, 이 순서만 따라가면 끝이에요</h2>
-        <p className={s.stepsIntroLead}>
+        <p className={landing.sectionSubtitle}>
           처음 한 번만 세팅하면 이후 수업마다 기록·문자·추적이 자동으로 이어집니다.
         </p>
       </header>

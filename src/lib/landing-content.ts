@@ -284,3 +284,14 @@ export const steps: Step[] = [
     ellipseSide: 'right',
   },
 ]
+
+/** 히어로 슬라이드 — STEP 0~6 미디어 묶음 (학부모 제외, 7세트) */
+export const heroSlides = steps
+  .filter((step) => step.id.startsWith('step-'))
+  .map((step) => ({
+    id: step.id,
+    media: step.media,
+    alt: step.media.alt,
+    step: step.step,
+    tab: step.tab ?? step.step,
+  }))
