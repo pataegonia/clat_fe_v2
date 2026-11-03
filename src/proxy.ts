@@ -9,9 +9,19 @@ function isAuthRoute(pathname: string): boolean {
   )
 }
 
-/** 로그인 없이 열 수 있는 라우트 (토큰이 있어도 그대로 허용 — 학부모 링크·출결 등) */
+/** 로그인 없이 열 수 있는 라우트 (토큰이 있어도 그대로 허용 — 랜딩·학부모 링크·출결 등) */
 function isPublicAppRoute(pathname: string): boolean {
-  return pathname.startsWith('/parent') || pathname.startsWith('/check')
+  return (
+    pathname === '/' ||
+    pathname.startsWith('/parent') ||
+    pathname.startsWith('/check') ||
+    pathname.startsWith('/terms') ||
+    pathname.startsWith('/privacy')
+  )
+}
+
+function homeRedirect(request: NextRequest) {
+  return NextResponse.redirect(new URL('/home', request.url))
 }
 
 export function proxy(request: NextRequest) {
@@ -26,7 +36,7 @@ export function proxy(request: NextRequest) {
 
   if (isAuthRoute(pathname)) {
     if (token) {
-      return NextResponse.redirect(new URL('/', request.url))
+      return homeRedirect(request)
     }
     return NextResponse.next()
   }

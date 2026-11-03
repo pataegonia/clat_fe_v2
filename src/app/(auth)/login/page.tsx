@@ -41,10 +41,15 @@ function LoginContent() {
       const user = await auth.login({ email, password })
       setUser(user)
 
-      // redirect 파라미터가 상대경로인 경우에만 사용, 아니면 홈으로
+      // redirect 파라미터가 상대경로인 경우에만 사용. 랜딩(/)이면 앱 홈으로
       const redirect = searchParams.get('redirect')
       const safeRedirect =
-        redirect && redirect.startsWith('/') && !redirect.startsWith('//') ? redirect : '/'
+        redirect &&
+        redirect.startsWith('/') &&
+        !redirect.startsWith('//') &&
+        redirect !== '/'
+          ? redirect
+          : '/home'
       router.push(safeRedirect)
     } catch (err: any) {
       const code = err.response?.data?.error?.code

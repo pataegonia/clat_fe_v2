@@ -12,11 +12,21 @@
     padding: 0;
   }
   
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     font-family: 'Pretendard', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100dvh;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
   }
   
   img, video {

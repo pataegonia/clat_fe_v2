@@ -70,7 +70,7 @@ function LessonNewContent() {
   return (
     <TemplateSelectModal
       isOpen={true}
-      onClose={() => router.push('/lesson')}
+      onClose={() => router.push(date ? `/lesson?date=${date}` : '/lesson')}
       onConfirm={handleConfirm}
       title="템플릿 선택"
       confirmLabel="수업 입력하기"

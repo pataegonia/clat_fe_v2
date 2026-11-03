@@ -224,24 +224,6 @@ export default function useLessonDetail(lessonId: number) {
     [addToast, confirmScheduleEdit, forgetDirtyStudent, lessonId, setLesson, setStudents],
   )
 
-  const handleExcelDownload = async () => {
-    if (!lesson) return
-    try {
-      const blob = await lessonService.exportLesson(lesson.id)
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `lesson-message-${lesson.id}.xlsx`
-      a.click()
-      URL.revokeObjectURL(url)
-    } catch {
-      addToast({
-        variant: 'error',
-        message: '엑셀 다운로드에 실패했어요.',
-      })
-    }
-  }
-
   const openAlimtalkSendModal = useCallback(async () => {
     const ok = await ensureSavedForAlimtalk()
     if (ok) alimtalkSendModal.open()
@@ -268,7 +250,6 @@ export default function useLessonDetail(lessonId: number) {
     scheduleEditOpen,
     acceptScheduleEdit,
     rejectScheduleEdit,
-    handleExcelDownload,
     refetch,
     refetchAfterAttendanceEnd,
     addAdhocItem: addAdhocItemGuarded,

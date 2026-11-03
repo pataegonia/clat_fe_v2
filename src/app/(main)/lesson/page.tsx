@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { addWeeks, subWeeks, format, addDays, isSameDay } from 'date-fns'
 import Text from '@/components/common/Text'
@@ -20,6 +20,7 @@ import {
   navButtonStyle,
   weekNavStyle,
   weekLabelStyle,
+  todayButtonStyle,
 } from './lesson.css'
 import { useLessonList } from '@/hooks/lesson/useLessonList'
 import { formatCompletionRatePercent } from '@/lib/completionRate'
@@ -28,24 +29,68 @@ import { useTutorial } from '@/features/tutorial/TutorialProvider'
 const DAYS_KO = ['월', '화', '수', '목', '금', '토', '일']
 type DateStatus = 'done' | 'inProgress' | 'none'
 
+function parseDateParam(value: string | null): Date | null {
+  if (!value) return null
+  const parsed = new Date(`${value}T00:00:00`)
+  if (Number.isNaN(parsed.getTime())) return null
+  return parsed
+}
+
+function dateKey(date: Date) {
+  return format(date, 'yyyy-MM-dd')
+}
+
 function LessonPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [currentWeek, setCurrentWeek] = useState(new Date())
-  const [selectedDate, setSelectedDate] = useState(new Date())
+  const dateParam = searchParams.get('date')
+  const initialDate = parseDateParam(dateParam) ?? new Date()
+  const [currentWeek, setCurrentWeek] = useState(initialDate)
+  const [selectedDate, setSelectedDate] = useState(initialDate)
   const [isAddLessonOpen, setIsAddLessonOpen] = useState(false)
 
+  const replaceDateInUrl = useCallback(
+    (date: Date) => {
+      const key = dateKey(date)
+      if (searchParams.get('date') === key) return
+      router.replace(`/lesson?date=${key}`, { scroll: false })
+    },
+    [router, searchParams],
+  )
+
   useEffect(() => {
-    const dateParam = searchParams.get('date')
-    if (!dateParam) return
-    const parsed = new Date(`${dateParam}T00:00:00`)
-    if (Number.isNaN(parsed.getTime())) return
-    setSelectedDate(parsed)
-    setCurrentWeek(parsed)
-  }, [searchParams])
+    const parsed = parseDateParam(dateParam)
+    if (parsed) {
+      setSelectedDate(parsed)
+      setCurrentWeek(parsed)
+      return
+    }
+    const today = new Date()
+    setSelectedDate(today)
+    setCurrentWeek(today)
+    replaceDateInUrl(today)
+  }, [dateParam, replaceDateInUrl])
+
+  const selectDate = (date: Date) => {
+    setSelectedDate(date)
+    setCurrentWeek(date)
+    replaceDateInUrl(date)
+  }
+
+  const shiftWeek = (delta: -1 | 1) => {
+    const nextSelected = delta < 0 ? subWeeks(selectedDate, 1) : addWeeks(selectedDate, 1)
+    setSelectedDate(nextSelected)
+    setCurrentWeek(nextSelected)
+    replaceDateInUrl(nextSelected)
+  }
+
+  const goToday = () => {
+    selectDate(new Date())
+  }
 
   const list = useLessonList(selectedDate, currentWeek)
   const tour = useTutorial()
+  const isTodaySelected = isSameDay(selectedDate, new Date())
 
   const getDateStatus = (date: Date): DateStatus => {
     const key = format(date, 'yyyy-MM-dd')
@@ -79,7 +124,8 @@ function LessonPageContent() {
         <button
           type="button"
           className={navButtonStyle}
-          onClick={() => setCurrentWeek(subWeeks(currentWeek, 1))}
+          onClick={() => shiftWeek(-1)}
+          aria-label="이전 주"
         >
           <ArrowLeftIcon width={24} height={24} />
         </button>
@@ -88,8 +134,17 @@ function LessonPageContent() {
         </span>
         <button
           type="button"
+          className={todayButtonStyle}
+          onClick={goToday}
+          disabled={isTodaySelected}
+        >
+          오늘
+        </button>
+        <button
+          type="button"
           className={navButtonStyle}
-          onClick={() => setCurrentWeek(addWeeks(currentWeek, 1))}
+          onClick={() => shiftWeek(1)}
+          aria-label="다음 주"
         >
           <ArrowRightIcon width={24} height={24} />
         </button>
@@ -104,7 +159,7 @@ function LessonPageContent() {
             status={item.status}
             isSelected={isSameDay(item.fullDate, selectedDate)}
             dataTour={isSameDay(item.fullDate, new Date()) ? 'lesson-today' : undefined}
-            onClick={() => setSelectedDate(item.fullDate)}
+            onClick={() => selectDate(item.fullDate)}
           />
         ))}
       </div>

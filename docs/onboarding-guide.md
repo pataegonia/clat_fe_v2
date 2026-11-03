@@ -352,7 +352,6 @@ Button, Text, Modal, Input, Textarea, Dropdown, Toggle, Chip, ConfirmModal, AddC
 | `updateLesson` | PATCH | `/lessons/:id` |
 | `saveLesson` | POST | `/lessons/:id/save` |
 | `previewLesson` | GET | `/lessons/:id/preview` |
-| `exportLesson` | GET | `/lessons/:id/export` |
 
 ### Students (`services/student.ts`)
 

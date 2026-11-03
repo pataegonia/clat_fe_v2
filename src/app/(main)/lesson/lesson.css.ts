@@ -90,6 +90,35 @@ export const weekLabelStyle = style({
   whiteSpace: 'nowrap',
 })
 
+export const todayButtonStyle = style({
+  flexShrink: 0,
+  height: 36,
+  padding: '0 12px',
+  border: `1px solid ${colors.gray200}`,
+  borderRadius: 8,
+  backgroundColor: colors.white,
+  color: colors.gray700,
+  fontSize: 14,
+  fontWeight: 600,
+  cursor: 'pointer',
+  selectors: {
+    '&:hover:not(:disabled)': {
+      backgroundColor: colors.gray50,
+    },
+    '&:disabled': {
+      opacity: 0.4,
+      cursor: 'default',
+    },
+  },
+  '@media': {
+    [media.phone]: {
+      height: 44,
+      padding: '0 10px',
+      borderRadius: 12,
+    },
+  },
+})
+
 globalStyle(`${weekLabelStyle} > *`, {
   '@media': {
     [media.phone]: {

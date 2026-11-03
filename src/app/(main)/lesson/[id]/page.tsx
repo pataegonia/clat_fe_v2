@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation'
 import Text from '@/components/common/Text'
 import Button from '@/components/common/Button'
 import ArrowLeftIcon from '@/assets/icons/icon-arrow-left.svg'
-import DownloadIcon from '@/assets/icons/icon-download.svg'
 import SaveIcon from '@/assets/icons/icon-save.svg'
 import ChevronDownIcon from '@/assets/icons/icon-chevron-down.svg'
 import MessageIcon from '@/assets/icons/icon-message.svg'
@@ -69,7 +68,6 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
     scheduleEditOpen,
     acceptScheduleEdit,
     rejectScheduleEdit,
-    handleExcelDownload,
     refetch,
     refetchAfterAttendanceEnd,
     addAdhocItem,
@@ -164,6 +162,8 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
 
   if (isLoading || !lesson) return null
 
+  const lessonListHref = `/lesson?date=${format(new Date(lesson.lesson_date), 'yyyy-MM-dd')}`
+
   if (error === 'TEMPLATE_NOT_FOUND') {
     return (
       <div className={pageStyle}>
@@ -172,7 +172,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
             <button
               onClick={() => {
                 invalidateLessonLists(queryClient)
-                router.push('/lesson')
+                router.push(lessonListHref)
               }}
               className={backButtonStyle}
             >
@@ -250,7 +250,7 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
           <button
             onClick={() => {
               invalidateLessonLists(queryClient)
-              router.push('/lesson')
+              router.push(lessonListHref)
             }}
             className={backButtonStyle}
           >
@@ -280,14 +280,6 @@ export default function LessonDetailPage({ params }: { params: Promise<{ id: str
               {attendanceButtonLabel}
             </Button>
           )}
-          <Button
-            variant="secondary"
-            size="sm"
-            leftIcon={<DownloadIcon width={20} height={20} />}
-            onClick={handleExcelDownload}
-          >
-            엑셀 다운로드
-          </Button>
           {(isAutoSaving || hasUnsavedChanges) && (
             <span className={autoSaveHintStyle}>
               {isAutoSaving ? '저장 중…' : '저장 대기'}
