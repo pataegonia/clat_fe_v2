@@ -1,67 +1,57 @@
 import { style, globalStyle, keyframes } from '@vanilla-extract/css'
 import { colors } from '@/styles/tokens/colors'
 import { media } from '@/styles/tokens/breakpoints'
-import { fontStyles } from '@/styles/tokens/typography'
 import { baseCardStyleRule } from '@/styles/tokens/card'
+import { zIndex } from '@/styles/tokens/zIndex'
 
-/** 카드 토큰(24) 기준 — spacing 토큰 부재로 섹션 큰 단계만 재사용 */
-const spaceCard = baseCardStyleRule.padding as string
-const spaceSectionMobile = '56px'
-const spaceSectionDesktop = '120px'
 const radiusCard = baseCardStyleRule.borderRadius as string
+const spaceCard = baseCardStyleRule.padding as string
+/** 2-col / 4-col 구간 — 레이아웃은 유지, 토큰 desktop(768)과 구분 */
+const mediaWide = 'screen and (min-width: 1024px)'
 
 export const page = style({
+  // overflow-x: hidden이면 overflow-y가 auto로 잡혀 이중 스크롤바가 생김
   overflowX: 'clip',
-  maxWidth: '100%',
 })
 
 export const container = style({
   width: '100%',
   maxWidth: '1200px',
   margin: '0 auto',
-  padding: `0 ${spaceCard}`,
-  boxSizing: 'border-box',
+  padding: '0 20px',
   '@media': {
-    [media.desktop]: { padding: `0 ${spaceCard}` },
-    'screen and (min-width: 1200px)': { padding: '0 40px', maxWidth: '1320px' },
+    [media.desktop]: { padding: '0 40px' },
+    '(min-width: 1200px)': { padding: '0 100px', maxWidth: '1320px' },
   },
 })
 
 export const section = style({
-  padding: `${spaceSectionMobile} 0`,
-  '@media': { [media.desktop]: { padding: `${spaceSectionDesktop} 0` } },
+  padding: '56px 0',
+  '@media': { [media.desktop]: { padding: '120px 0' } },
 })
 
 export const sectionTitle = style({
-  ...fontStyles.display,
+  fontSize: '26px',
+  fontWeight: 700,
   lineHeight: 1.35,
   letterSpacing: '-0.03em',
   color: colors.gray900,
   textAlign: 'center',
   wordBreak: 'keep-all',
-  maxWidth: '40ch',
-  margin: '0 auto',
-  '@media': { [media.desktop]: { fontSize: '48px', fontWeight: '700' } },
+  '@media': { [media.desktop]: { fontSize: '48px' } },
 })
 
 export const sectionSubtitle = style({
-  ...fontStyles.bodyLg,
-  marginTop: spaceCard,
-  marginLeft: 'auto',
-  marginRight: 'auto',
+  marginTop: '16px',
+  fontSize: '16px',
+  fontWeight: 500,
   lineHeight: 1.55,
   letterSpacing: '-0.03em',
   color: colors.gray500,
   textAlign: 'center',
   wordBreak: 'keep-all',
-  maxWidth: '40ch',
-  '@media': { [media.desktop]: { ...fontStyles.headingMd, color: colors.gray500, marginTop: spaceCard } },
+  '@media': { [media.desktop]: { fontSize: '28px', marginTop: '20px' } },
 })
-
-export const sectionClosing = style([
-  sectionSubtitle,
-  { marginTop: spaceSectionMobile },
-])
 
 export const highlight = style({ color: colors.primary500 })
 
@@ -75,24 +65,23 @@ export const responsiveImage = style({
 export const header = style({
   position: 'sticky',
   top: 0,
-  zIndex: 100,
-  backgroundColor: 'rgba(250, 250, 250, 0.72)',
+  zIndex: zIndex.footer,
+  backgroundColor: `color-mix(in srgb, ${colors.background} 72%, transparent)`,
   backdropFilter: 'blur(16px)',
   borderBottom: '1px solid transparent',
   transition: 'background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
 })
 
 export const headerScrolled = style({
-  backgroundColor: 'rgba(255, 255, 255, 0.92)',
+  backgroundColor: `color-mix(in srgb, ${colors.white} 92%, transparent)`,
   borderBottom: `1px solid ${colors.gray50}`,
-  boxShadow: '0 4px 24px rgba(59, 81, 204, 0.08)',
+  boxShadow: `0 4px 24px color-mix(in srgb, ${colors.primary500} 8%, transparent)`,
 })
 
 export const headerInner = style({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  minHeight: '44px',
   height: '60px',
   '@media': { [media.desktop]: { height: '72px' } },
 })
@@ -108,44 +97,34 @@ export const logo = style({ height: '32px', width: 'auto', objectFit: 'contain' 
 
 export const navLinks = style({
   display: 'none',
-  gap: spaceCard,
+  gap: '32px',
   '@media': { [media.desktop]: { display: 'flex' } },
 })
 
 export const navLink = style({
-  ...fontStyles.titleSm,
-  minHeight: '44px',
-  display: 'inline-flex',
-  alignItems: 'center',
+  fontSize: '15px',
+  fontWeight: 600,
   color: colors.gray700,
   transition: 'color 0.2s',
-  selectors: {
-    '&:hover': { color: colors.primary500 },
-    '&:focus-visible': {
-      outline: `2px solid ${colors.primary700}`,
-      outlineOffset: '2px',
-    },
-  },
+  selectors: { '&:hover': { color: colors.primary500 } },
 })
 
 export const ctaButton = style({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: '44px',
-  padding: `12px ${spaceCard}`,
-  borderRadius: radiusCard,
+  padding: '12px 24px',
+  borderRadius: '999px',
   backgroundColor: colors.primary500,
   color: colors.white,
-  ...fontStyles.titleSm,
-  transition: 'background-color 0.2s, transform 0.2s, opacity 0.2s',
+  fontSize: '14px',
+  fontWeight: 600,
+  transition: 'background-color 0.2s, box-shadow 0.2s',
+  boxShadow: `0 4px 14px color-mix(in srgb, ${colors.primary500} 25%, transparent)`,
   selectors: {
     '&:hover': {
       backgroundColor: colors.primary600,
-    },
-    '&:focus-visible': {
-      outline: `2px solid ${colors.primary700}`,
-      outlineOffset: '2px',
+      boxShadow: `0 6px 20px color-mix(in srgb, ${colors.primary500} 35%, transparent)`,
     },
   },
 })
@@ -157,35 +136,26 @@ export const headerDesktopCta = style({
 
 export const ctaButtonLarge = style([
   ctaButton,
-  {
-    minHeight: '44px',
-    padding: `${spaceCard} 40px`,
-    ...fontStyles.bodyLg,
-    borderRadius: radiusCard,
-  },
+  { padding: '16px 40px', fontSize: '16px', borderRadius: '12px' },
 ])
 
 export const ctaButtonGhost = style({
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: '44px',
-  padding: `${spaceCard} 40px`,
-  borderRadius: radiusCard,
+  padding: '16px 40px',
+  borderRadius: '12px',
   backgroundColor: 'transparent',
   color: colors.gray700,
-  ...fontStyles.bodyLg,
+  fontSize: '16px',
+  fontWeight: 600,
   outline: `1px solid ${colors.gray100}`,
-  transition: 'background-color 0.2s, color 0.2s, outline-color 0.2s',
+  transition: 'all 0.2s',
   selectors: {
     '&:hover': {
       backgroundColor: colors.white,
       outlineColor: colors.primary500,
       color: colors.primary500,
-    },
-    '&:focus-visible': {
-      outline: `2px solid ${colors.primary700}`,
-      outlineOffset: '2px',
     },
   },
 })
@@ -206,18 +176,23 @@ const shimmer = keyframes({
   '100%': { backgroundPosition: '-200% center' },
 })
 
+const pulseGlow = keyframes({
+  '0%, 100%': { opacity: 0.5, transform: 'scale(1)' },
+  '50%': { opacity: 0.85, transform: 'scale(1.08)' },
+})
+
 export const hero = style({
   position: 'relative',
-  padding: `${spaceSectionMobile} 0`,
+  padding: '36px 0 48px',
   background: `radial-gradient(ellipse at 50% 0%, ${colors.background} 0%, ${colors.primary100} 55%, ${colors.primary200} 100%)`,
   overflow: 'hidden',
-  '@media': { [media.desktop]: { padding: `${spaceSectionDesktop} 0` } },
+  '@media': { [media.desktop]: { padding: '80px 0 120px' } },
 })
 
 export const heroGrid = style({
   position: 'absolute',
   inset: 0,
-  backgroundImage: `radial-gradient(circle at 1px 1px, rgba(59, 81, 204, 0.07) 1px, transparent 0)`,
+  backgroundImage: `radial-gradient(circle at 1px 1px, color-mix(in srgb, ${colors.primary500} 7%, transparent) 1px, transparent 0)`,
   backgroundSize: '32px 32px',
   maskImage: 'linear-gradient(to bottom, black 20%, transparent 90%)',
   pointerEvents: 'none',
@@ -260,6 +235,7 @@ export const heroBlob2 = style([
 export const heroBadge = style({
   display: 'inline-flex',
   alignItems: 'center',
+  gap: '8px',
   padding: '8px 16px',
   marginBottom: '24px',
   borderRadius: '999px',
@@ -269,7 +245,16 @@ export const heroBadge = style({
   fontWeight: 600,
   color: colors.primary600,
   backdropFilter: 'blur(8px)',
-  boxShadow: '0 2px 12px rgba(59, 81, 204, 0.1)',
+  boxShadow: `0 2px 12px color-mix(in srgb, ${colors.primary500} 10%, transparent)`,
+})
+
+export const heroBadgeDot = style({
+  width: '8px',
+  height: '8px',
+  borderRadius: '50%',
+  backgroundColor: colors.success500,
+  boxShadow: `0 0 0 4px ${colors.success50}`,
+  animation: `${pulseGlow} 2s ease-in-out infinite`,
 })
 
 export const heroTitleLine = style({
@@ -292,9 +277,9 @@ export const heroFeatureRow = style({
   display: 'flex',
   flexWrap: 'wrap',
   gap: '8px',
-  justifyContent: 'flex-start',
-  marginTop: spaceCard,
-  '@media': { [media.phone]: { justifyContent: 'center' } },
+  justifyContent: 'center',
+  marginTop: '20px',
+  '@media': { [media.desktop]: { gap: '10px', marginTop: '28px' } },
 })
 
 export const heroFeaturePill = style({
@@ -306,22 +291,23 @@ export const heroFeaturePill = style({
   fontWeight: 600,
   color: colors.gray700,
   backdropFilter: 'blur(6px)',
-  '@media': { '(min-width: 768px)': { padding: '8px 14px', fontSize: '13px' } },
+  '@media': { [media.desktop]: { padding: '8px 14px', fontSize: '13px' } },
 })
 
 export const trustBar = style({
   borderTop: `1px solid ${colors.gray75}`,
   borderBottom: `1px solid ${colors.gray75}`,
-  backgroundColor: colors.white,
-  padding: `${spaceCard} 0`,
+  backgroundColor: 'rgba(255, 255, 255, 0.6)',
+  backdropFilter: 'blur(12px)',
+  padding: '28px 0',
 })
 
 export const trustGrid = style({
   display: 'grid',
   gridTemplateColumns: 'repeat(2, 1fr)',
-  gap: spaceCard,
+  gap: '24px',
   '@media': {
-    [media.desktop]: { gridTemplateColumns: 'repeat(4, 1fr)', gap: spaceCard },
+    [media.desktop]: { gridTemplateColumns: 'repeat(4, 1fr)', gap: '32px' },
   },
 })
 
@@ -330,20 +316,20 @@ export const trustItem = style({
 })
 
 export const trustValue = style({
-  ...fontStyles.display,
+  fontSize: '28px',
+  fontWeight: 700,
   letterSpacing: '-0.03em',
   color: colors.primary500,
-  '@media': { [media.desktop]: { ...fontStyles.headingLg, color: colors.primary500, fontSize: '36px' } },
+  '@media': { [media.desktop]: { fontSize: '36px' } },
 })
 
 export const trustLabel = style({
-  ...fontStyles.bodyMd,
   marginTop: '6px',
+  fontSize: '14px',
+  fontWeight: 500,
   color: colors.gray600,
   lineHeight: 1.4,
-  maxWidth: '40ch',
-  marginLeft: 'auto',
-  marginRight: 'auto',
+  '@media': { [media.desktop]: { fontSize: '15px' } },
 })
 
 export const marqueeSection = style({
@@ -388,11 +374,16 @@ export const painCard = style({
   alignItems: 'center',
   textAlign: 'center',
   border: `1px solid ${colors.gray100}`,
-  transition: 'border-color 0.3s ease, background-color 0.3s ease, transform 0.3s ease',
+  transition: 'border-color 0.3s ease, background-color 0.3s ease',
   selectors: {
     '&:hover': {
       borderColor: colors.primary200,
       backgroundColor: colors.white,
+    },
+  },
+  '@media': {
+    [media.desktop]: {
+      padding: `${spaceCard} ${spaceCard} 32px`,
     },
   },
 })
@@ -407,18 +398,19 @@ export const solutionCard = style({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  border: `1px solid ${colors.gray75}`,
-  transition: 'transform 0.3s ease, opacity 0.3s ease',
+  border: `1px solid ${colors.gray100}`,
+  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+  '@media': { [mediaWide]: { padding: '32px 20px' } },
 })
 
 export const benefitCard = style({
   position: 'relative',
   overflow: 'hidden',
   backgroundColor: colors.gray50,
-  borderRadius: '32px',
-  padding: '32px 28px',
+  borderRadius: radiusCard,
+  padding: spaceCard,
   minHeight: '180px',
-  border: `1px solid ${colors.gray75}`,
+  border: `1px solid ${colors.gray100}`,
   transition: 'border-color 0.3s ease, background-color 0.3s ease',
   selectors: {
     '&:hover': {
@@ -431,16 +423,16 @@ export const benefitCard = style({
 export const aboutFeatureGrid = style({
   display: 'grid',
   gridTemplateColumns: '1fr',
-  gap: '16px',
+  gap: '20px',
   marginTop: '48px',
   '@media': {
-    '(min-width: 640px)': { gridTemplateColumns: 'repeat(3, 1fr)' },
+    [media.desktop]: { gridTemplateColumns: 'repeat(3, 1fr)' },
   },
 })
 
 export const aboutFeatureCard = style({
-  padding: '24px 20px',
-  borderRadius: '20px',
+  padding: spaceCard,
+  borderRadius: radiusCard,
   backgroundColor: colors.primary50,
   border: `1px solid ${colors.primary100}`,
   textAlign: 'center',
@@ -468,7 +460,7 @@ export const aboutFeatureDesc = style({
 export const stepConnector = style({
   display: 'none',
   '@media': {
-    '(min-width: 1024px)': {
+    [mediaWide]: {
       display: 'block',
       position: 'absolute',
       left: '50%',
@@ -495,7 +487,7 @@ export const stepLayout = style({
   gap: '40px',
   alignItems: 'center',
   '@media': {
-    '(min-width: 1024px)': { gridTemplateColumns: '1fr 1fr', gap: '64px' },
+    [mediaWide]: { gridTemplateColumns: '1fr 1fr', gap: '64px' },
   },
 })
 
@@ -526,7 +518,7 @@ export const stepTitle = style({
   letterSpacing: '-0.03em',
   color: colors.gray900,
   whiteSpace: 'pre-line',
-  '@media': { '(min-width: 768px)': { fontSize: '48px' } },
+  '@media': { [media.desktop]: { fontSize: '48px' } },
 })
 
 export const stepDescText = style({
@@ -534,7 +526,7 @@ export const stepDescText = style({
   fontWeight: 500,
   lineHeight: 1.6,
   color: colors.gray700,
-  '@media': { '(min-width: 768px)': { fontSize: '22px' } },
+  '@media': { [media.desktop]: { fontSize: '22px' } },
 })
 
 export const stepDescList = style({
@@ -623,7 +615,7 @@ export const stepImageDoubleOverlay = style({
   right: 0,
   bottom: 0,
   objectFit: 'contain',
-  '@media': { '(min-width: 768px)': { width: '42%', right: '-12px', bottom: '-24px' } },
+  '@media': { [media.desktop]: { width: '42%', right: '-12px', bottom: '-24px' } },
 })
 
 export const ctaShimmerButton = style([
@@ -632,7 +624,7 @@ export const ctaShimmerButton = style([
     background: `linear-gradient(90deg, ${colors.primary500}, ${colors.primary400}, ${colors.primary600}, ${colors.primary500})`,
     backgroundSize: '200% auto',
     animation: `${shimmer} 4s linear infinite`,
-    boxShadow: '0 8px 32px rgba(59, 81, 204, 0.4)',
+    boxShadow: `0 8px 32px color-mix(in srgb, ${colors.primary500} 40%, transparent)`,
   },
 ])
 
@@ -643,17 +635,11 @@ export const mobileMenuButton = style({
   gap: '5px',
   width: '44px',
   height: '44px',
-  minWidth: '44px',
-  minHeight: '44px',
   padding: '10px',
-  borderRadius: radiusCard,
+  borderRadius: '10px',
   '@media': { [media.desktop]: { display: 'none' } },
   selectors: {
     '&:hover': { backgroundColor: colors.gray50 },
-    '&:focus-visible': {
-      outline: `2px solid ${colors.primary700}`,
-      outlineOffset: '2px',
-    },
   },
 })
 
@@ -670,7 +656,7 @@ export const mobileNav = style({
   display: 'flex',
   flexDirection: 'column',
   gap: '8px',
-  padding: spaceCard,
+  padding: '16px 24px 24px',
   borderTop: `1px solid ${colors.gray50}`,
   backgroundColor: colors.white,
   '@media': { [media.desktop]: { display: 'none' } },
@@ -679,10 +665,11 @@ export const mobileNav = style({
 export const mobileNavLink = style({
   display: 'flex',
   alignItems: 'center',
-  minHeight: '44px',
-  padding: `12px ${spaceCard}`,
-  borderRadius: radiusCard,
-  ...fontStyles.bodyLg,
+  minHeight: '48px',
+  padding: '12px 16px',
+  borderRadius: '12px',
+  fontSize: '16px',
+  fontWeight: 600,
   color: colors.gray700,
   transition: 'background-color 0.2s, color 0.2s',
   selectors: {
@@ -690,161 +677,33 @@ export const mobileNavLink = style({
       backgroundColor: colors.primary50,
       color: colors.primary500,
     },
-    '&:focus-visible': {
-      outline: `2px solid ${colors.primary700}`,
-      outlineOffset: '2px',
-    },
   },
 })
 
 globalStyle(`${mobileNav} ${ctaButtonLarge}`, {
   width: '100%',
-  minHeight: '44px',
+  minHeight: '52px',
   marginTop: '8px',
 })
 
 export const heroScreenshotWrap = style({
+  marginTop: '32px',
   width: '100%',
-  backgroundColor: 'transparent',
-})
-
-export const heroSlideViewport = style({
-  position: 'relative',
-  width: '100%',
-  overflow: 'visible',
-  backgroundColor: 'transparent',
-})
-
-export const heroSlide = style({
-  width: '100%',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-})
-
-/** 사용법 묶음 전체 노출 — 크면 비율만 줄여 맞춤 */
-export const heroSlideMedia = style({
-  width: '100%',
-  maxWidth: '520px',
-  maxHeight: 'min(48vh, 420px)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  margin: '0 auto',
-  overflow: 'visible',
+  maxWidth: '1100px',
+  padding: '8px',
+  backgroundColor: colors.gray900,
+  borderRadius: radiusCard,
+  boxShadow: `0 16px 40px color-mix(in srgb, ${colors.primary500} 18%, transparent), 0 0 0 1px color-mix(in srgb, ${colors.white} 6%, transparent) inset`,
   '@media': {
-    [media.desktop]: {
-      maxWidth: '640px',
-      maxHeight: 'min(56vh, 520px)',
-    },
+    [media.desktop]: { padding: '16px', borderRadius: radiusCard, marginTop: '72px' },
   },
 })
-
-globalStyle(`${heroSlideMedia} > *`, {
-  width: '100%',
-  maxWidth: '100%',
-  maxHeight: 'min(48vh, 420px)',
-  minHeight: '0',
-  margin: '0 auto',
-  '@media': {
-    [media.desktop]: {
-      maxHeight: 'min(56vh, 520px)',
-    },
-  },
-})
-
-globalStyle(`${heroSlideMedia} img`, {
-  maxHeight: 'min(48vh, 420px)',
-  width: 'auto',
-  height: 'auto',
-  objectFit: 'contain',
-  '@media': {
-    [media.desktop]: {
-      maxHeight: 'min(56vh, 520px)',
-    },
-  },
-})
-
-export const heroSlideDots = style({
-  display: 'flex',
-  justifyContent: 'center',
-  gap: '8px',
-  paddingTop: '12px',
-})
-
-export const heroSlideDot = style({
-  width: '44px',
-  height: '44px',
-  minWidth: '44px',
-  minHeight: '44px',
-  padding: 0,
-  border: 'none',
-  borderRadius: '50%',
-  backgroundColor: 'transparent',
-  cursor: 'pointer',
-  position: 'relative',
-  selectors: {
-    '&::after': {
-      content: '""',
-      position: 'absolute',
-      top: '50%',
-      left: '50%',
-      width: '8px',
-      height: '8px',
-      borderRadius: '50%',
-      backgroundColor: colors.gray300,
-      transform: 'translate(-50%, -50%)',
-    },
-    '&:focus-visible': {
-      outline: `2px solid ${colors.primary400}`,
-      outlineOffset: '2px',
-    },
-  },
-})
-
-export const heroSlideDotActive = style([
-  heroSlideDot,
-  {
-    selectors: {
-      '&::after': {
-        backgroundColor: colors.primary500,
-        width: '10px',
-        height: '10px',
-      },
-    },
-  },
-])
 
 export const heroInner = style({
-  display: 'grid',
-  gridTemplateColumns: '1fr',
-  gap: spaceCard,
-  alignItems: 'center',
-  textAlign: 'center',
-  '@media': {
-    [media.desktop]: {
-      gridTemplateColumns: '5fr 7fr',
-      gap: spaceSectionMobile,
-      textAlign: 'left',
-      alignItems: 'center',
-    },
-  },
-})
-
-export const heroCopy = style({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  width: '100%',
-  minWidth: 0,
-  '@media': {
-    [media.desktop]: { alignItems: 'flex-start' },
-  },
-})
-
-export const heroVisual = style({
-  width: '100%',
-  minWidth: 0,
+  textAlign: 'center',
 })
 
 export const heroLogoWrap = style({
@@ -852,81 +711,74 @@ export const heroLogoWrap = style({
   '@media': { [media.desktop]: { display: 'block' } },
 })
 
-export const heroLogo = style({
-  height: '40px',
-  width: 'auto',
-  marginBottom: spaceCard,
-  objectFit: 'contain',
-})
+export const heroLogo = style({ height: '40px', width: 'auto', marginBottom: '32px', objectFit: 'contain' })
 
 export const heroTitle = style({
-  ...fontStyles.display,
+  fontSize: 'clamp(26px, calc((100vw - 56px) / 10), 64px)',
+  fontWeight: 700,
   lineHeight: 1.28,
   letterSpacing: '-0.045em',
   color: colors.gray900,
-  maxWidth: '40ch',
+  maxWidth: '900px',
   wordBreak: 'keep-all',
-  '@media': {
-    [media.desktop]: { fontSize: '48px', fontWeight: '700', letterSpacing: '-0.05em' },
-  },
+  '@media': { [media.desktop]: { fontSize: '64px', letterSpacing: '-0.05em' } },
 })
 
 export const heroSubtitle = style({
-  ...fontStyles.bodyLg,
-  marginTop: spaceCard,
+  marginTop: '16px',
+  fontSize: '16px',
+  fontWeight: 500,
   lineHeight: 1.55,
   letterSpacing: '-0.03em',
   color: colors.gray700,
-  maxWidth: '40ch',
+  maxWidth: '520px',
   wordBreak: 'keep-all',
-  '@media': {
-    [media.desktop]: { ...fontStyles.headingMd, color: colors.gray700, marginTop: spaceCard },
-  },
+  '@media': { [media.desktop]: { fontSize: '28px', marginTop: '24px', letterSpacing: '-0.04em' } },
 })
 
 export const heroActions = style({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'stretch',
+  gap: '10px',
   width: '100%',
   maxWidth: '360px',
-  marginTop: spaceCard,
+  marginTop: '24px',
   '@media': {
     [media.desktop]: {
-      alignItems: 'flex-start',
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
       width: 'auto',
       maxWidth: 'none',
+      marginTop: '40px',
+      gap: '12px',
     },
   },
 })
 
 globalStyle(`${heroActions} a`, {
   width: '100%',
-  minHeight: '44px',
+  minHeight: '52px',
   '@media': {
-    [media.desktop]: { width: 'auto' },
+    [media.desktop]: { width: 'auto', minHeight: 'auto' },
   },
 })
 
 export const heroScreenshot = style({
   width: '100%',
-  height: '100%',
+  height: 'auto',
+  borderRadius: '12px',
   objectFit: 'contain',
-  borderRadius: radiusCard,
-  backgroundColor: 'transparent',
 })
 
 export const painGrid = style({
   display: 'grid',
   gridTemplateColumns: '1fr',
-  gap: spaceCard,
-  marginTop: spaceSectionMobile,
+  gap: '20px',
+  marginTop: '32px',
   '@media': {
-    [media.desktop]: {
-      gridTemplateColumns: 'repeat(3, 1fr)',
-      gap: spaceCard,
-      marginTop: spaceSectionMobile,
-    },
+    [media.desktop]: { gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px', marginTop: '56px' },
   },
 })
 
@@ -935,77 +787,93 @@ export const painImageWrap = style({
   alignItems: 'center',
   justifyContent: 'center',
   width: '100%',
-  aspectRatio: '4 / 3',
-  marginBottom: spaceCard,
-  overflow: 'hidden',
-  borderRadius: radiusCard,
-  backgroundColor: colors.white,
+  minHeight: '180px',
+  marginBottom: '24px',
 })
 
 export const painImage = style({
-  width: '100%',
-  height: '100%',
+  width: 'auto',
+  height: 'auto',
+  maxWidth: '100%',
+  maxHeight: '220px',
   objectFit: 'contain',
 })
 
 export const painText = style({
-  ...fontStyles.headingSm,
-  maxWidth: '40ch',
+  maxWidth: '18em',
   margin: '0 auto',
+  fontSize: '20px',
+  fontWeight: 600,
   lineHeight: 1.45,
   letterSpacing: '-0.03em',
   color: colors.gray900,
   wordBreak: 'keep-all',
   overflowWrap: 'break-word',
   '@media': {
-    [media.desktop]: { ...fontStyles.headingMd, color: colors.gray900, maxWidth: '40ch' },
+    [media.desktop]: { fontSize: '24px', maxWidth: '11.5em' },
+    '(min-width: 1200px)': { fontSize: '26px' },
   },
 })
 
 export const aboutSection = style({ backgroundColor: colors.white })
 
 export const aboutHeaderWrap = style({
-  paddingBottom: spaceSectionMobile,
-  '@media': { [media.desktop]: { paddingBottom: spaceSectionMobile } },
+  paddingBottom: '40px',
+  '@media': { [media.desktop]: { paddingBottom: '56px' } },
+})
+
+export const aboutBodySection = style({
+  paddingTop: 0,
+})
+
+export const problemClosing = style([
+  sectionSubtitle,
+  {
+    marginTop: '56px',
+  },
+])
+
+export const heroCopy = style({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  width: '100%',
 })
 
 export const aboutHeader = style({
-  maxWidth: '40ch',
+  maxWidth: '720px',
   margin: '0 auto',
   textAlign: 'center',
 })
 
 export const aboutBody = style({
-  ...fontStyles.bodyLg,
-  marginTop: spaceCard,
+  marginTop: '24px',
+  fontSize: '17px',
+  fontWeight: 500,
   lineHeight: 1.7,
   letterSpacing: '-0.03em',
   color: colors.gray700,
   wordBreak: 'keep-all',
-  maxWidth: '40ch',
-  marginLeft: 'auto',
-  marginRight: 'auto',
-  '@media': { [media.desktop]: { ...fontStyles.headingSm, color: colors.gray700, marginTop: spaceCard } },
+  '@media': { [media.desktop]: { fontSize: '22px', marginTop: '32px' } },
 })
 
 export const aboutLayout = style({
   display: 'grid',
   gridTemplateColumns: '1fr',
-  gap: spaceSectionMobile,
+  gap: '40px',
   alignItems: 'center',
   '@media': {
-    'screen and (min-width: 1024px)': {
-      gridTemplateColumns: '5fr 7fr',
-      gap: spaceSectionMobile,
+    [mediaWide]: {
+      gridTemplateColumns: 'minmax(280px, 0.9fr) minmax(0, 1.15fr)',
+      gap: '48px 56px',
       alignItems: 'center',
     },
   },
 })
 
 export const aboutIntro = style({
-  maxWidth: '40ch',
   '@media': {
-    'screen and (min-width: 1024px)': {
+    [mediaWide]: {
       position: 'sticky',
       top: '112px',
       alignSelf: 'center',
@@ -1014,30 +882,31 @@ export const aboutIntro = style({
 })
 
 export const aboutIntroTitle = style({
-  ...fontStyles.display,
+  fontSize: '26px',
+  fontWeight: 700,
   lineHeight: 1.35,
   letterSpacing: '-0.03em',
   color: colors.gray900,
   wordBreak: 'keep-all',
-  maxWidth: '40ch',
-  '@media': { [media.desktop]: { fontSize: '44px', fontWeight: '700' } },
+  '@media': { [media.desktop]: { fontSize: '44px' } },
 })
 
 export const aboutIntroDesc = style({
-  ...fontStyles.headingSm,
-  marginTop: spaceCard,
+  marginTop: '24px',
+  fontSize: '18px',
+  fontWeight: 500,
   lineHeight: 1.55,
   letterSpacing: '-0.03em',
   color: colors.gray500,
   wordBreak: 'keep-all',
-  maxWidth: '40ch',
-  '@media': { [media.desktop]: { ...fontStyles.headingSm, color: colors.gray500, marginTop: spaceCard } },
+  '@media': { [media.desktop]: { fontSize: '22px', marginTop: '28px' } },
 })
 
 export const aboutValueList = style({
   display: 'flex',
   flexDirection: 'column',
-  gap: spaceCard,
+  gap: '28px',
+  '@media': { [media.desktop]: { gap: '40px' } },
 })
 
 export const aboutValueCard = style({
@@ -1045,13 +914,19 @@ export const aboutValueCard = style({
   overflow: 'hidden',
   backgroundColor: colors.gray50,
   borderRadius: radiusCard,
-  padding: spaceSectionMobile,
+  border: `1px solid ${colors.gray100}`,
+  padding: '56px 28px 32px',
   minHeight: '160px',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
-  border: `1px solid ${colors.gray100}`,
-  transition: 'transform 0.3s ease, opacity 0.3s ease',
+  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+  '@media': {
+    [media.desktop]: {
+      minHeight: '180px',
+      padding: '48px 40px 32px',
+    },
+  },
 })
 
 export const aboutValueBadge = style({
@@ -1071,7 +946,7 @@ export const aboutValueBadge = style({
   fontWeight: 600,
   letterSpacing: '-0.04em',
   '@media': {
-    '(min-width: 768px)': {
+    [media.desktop]: {
       left: '40px',
       minWidth: '140px',
       height: '52px',
@@ -1083,27 +958,28 @@ export const aboutValueBadge = style({
 export const aboutValueBody = style({
   position: 'relative',
   zIndex: 1,
-  maxWidth: '40ch',
+  maxWidth: '100%',
   '@media': { [media.desktop]: { maxWidth: '58%' } },
 })
 
 export const aboutValueTitle = style({
-  ...fontStyles.headingSm,
+  fontSize: '22px',
+  fontWeight: 700,
   lineHeight: 1.35,
   letterSpacing: '-0.03em',
   color: colors.gray700,
   marginBottom: '8px',
   wordBreak: 'keep-all',
-  '@media': { [media.desktop]: { ...fontStyles.headingLg, color: colors.gray700, marginBottom: spaceCard } },
+  '@media': { [media.desktop]: { fontSize: '36px', marginBottom: '16px' } },
 })
 
 export const aboutValueDesc = style({
-  ...fontStyles.bodyLg,
+  fontSize: '16px',
+  fontWeight: 500,
   lineHeight: 1.45,
   letterSpacing: '-0.04em',
   color: colors.gray700,
-  maxWidth: '40ch',
-  '@media': { [media.desktop]: { ...fontStyles.headingSm, color: colors.gray700 } },
+  '@media': { [media.desktop]: { fontSize: '20px' } },
 })
 
 export const aboutValueImage = style({
@@ -1112,11 +988,13 @@ export const aboutValueImage = style({
     [media.desktop]: {
       display: 'block',
       position: 'absolute',
-      right: 0,
+      right: '4%',
       top: '50%',
       transform: 'translateY(-50%)',
-      width: '40%',
-      aspectRatio: '4 / 3',
+      width: 'auto',
+      height: 'auto',
+      maxWidth: '40%',
+      maxHeight: '100%',
       objectFit: 'contain',
       opacity: 0.2,
       pointerEvents: 'none',
@@ -1155,15 +1033,11 @@ export const solutionTitle = style([
 export const solutionGrid = style({
   display: 'grid',
   gridTemplateColumns: '1fr',
-  gap: spaceCard,
-  marginTop: spaceSectionMobile,
+  gap: '20px',
+  marginTop: '48px',
   '@media': {
-    'screen and (min-width: 640px)': { gridTemplateColumns: 'repeat(2, 1fr)', gap: spaceCard },
-    'screen and (min-width: 1024px)': {
-      gridTemplateColumns: 'repeat(4, 1fr)',
-      gap: spaceCard,
-      marginTop: spaceSectionMobile,
-    },
+    [media.desktop]: { gridTemplateColumns: 'repeat(2, 1fr)', gap: '20px' },
+    [mediaWide]: { gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginTop: '56px' },
   },
 })
 
@@ -1184,19 +1058,21 @@ export const painBadge = style({
   flexDirection: 'column',
   alignItems: 'center',
   justifyContent: 'center',
-  minHeight: '120px',
+  '@media': {
+    [media.desktop]: { padding: '28px 20px 24px' },
+  },
 })
 
 export const painBadgeLabel = style({
   display: 'inline-block',
   padding: '2px 10px',
   borderRadius: '6px',
-  backgroundColor: 'rgba(59, 81, 204, 0.6)',
+  backgroundColor: `color-mix(in srgb, ${colors.primary500} 60%, transparent)`,
   fontSize: '14px',
   fontWeight: 600,
   letterSpacing: '-0.04em',
   marginBottom: '16px',
-  '@media': { '(min-width: 768px)': { fontSize: '18px' } },
+  '@media': { [media.desktop]: { fontSize: '18px' } },
 })
 
 export const painBadgeText = style({
@@ -1205,7 +1081,7 @@ export const painBadgeText = style({
   lineHeight: 1.4,
   letterSpacing: '-0.04em',
   whiteSpace: 'pre-line',
-  '@media': { '(min-width: 768px)': { fontSize: '24px' } },
+  '@media': { [media.desktop]: { fontSize: '24px' } },
 })
 
 export const solutionConnector = style({
@@ -1213,7 +1089,7 @@ export const solutionConnector = style({
   justifyContent: 'center',
   height: '48px',
   width: '100%',
-  '@media': { '(min-width: 768px)': { height: '64px' } },
+  '@media': { [media.desktop]: { height: '64px' } },
 })
 
 export const solutionConnectorLine = style({
@@ -1224,34 +1100,34 @@ export const solutionConnectorLine = style({
 })
 
 export const solutionIcon = style({
-  width: '88px',
-  height: '88px',
+  width: '72px',
+  height: '72px',
   objectFit: 'contain',
-  marginBottom: '20px',
-  '@media': { '(min-width: 768px)': { width: '110px', height: '110px', marginBottom: '24px' } },
+  marginBottom: '16px',
+  '@media': { [media.desktop]: { width: '88px', height: '88px', marginBottom: '20px' } },
 })
 
 export const solutionCardTitle = style({
-  ...fontStyles.headingSm,
+  fontSize: '20px',
+  fontWeight: 700,
   lineHeight: 1.4,
   letterSpacing: '-0.04em',
   color: colors.gray900,
   marginBottom: '12px',
   wordBreak: 'keep-all',
-  maxWidth: '40ch',
-  '@media': { [media.desktop]: { ...fontStyles.headingMd, color: colors.gray900 } },
+  '@media': { [media.desktop]: { fontSize: '24px' }, '(min-width: 1200px)': { fontSize: '26px' } },
 })
 
 export const solutionCardDesc = style({
-  ...fontStyles.bodyMd,
+  fontSize: '15px',
+  fontWeight: 500,
   lineHeight: 1.5,
   letterSpacing: '-0.03em',
   color: colors.gray500,
   whiteSpace: 'pre-line',
   wordBreak: 'keep-all',
   overflowWrap: 'break-word',
-  maxWidth: '40ch',
-  '@media': { [media.desktop]: { ...fontStyles.headingSm, color: colors.gray500 } },
+  '@media': { [media.desktop]: { fontSize: '18px' }, '(min-width: 1200px)': { fontSize: '20px' } },
 })
 
 export const benefitsLayout = style({
@@ -1260,7 +1136,7 @@ export const benefitsLayout = style({
   gap: '48px',
   marginTop: '56px',
   '@media': {
-    '(min-width: 1024px)': { gridTemplateColumns: '1fr 1.2fr', alignItems: 'start' },
+    [mediaWide]: { gridTemplateColumns: '1fr 1.2fr', alignItems: 'start' },
   },
 })
 
@@ -1270,7 +1146,7 @@ export const benefitsIntroTitle = style({
   lineHeight: 1.3,
   letterSpacing: '-0.03em',
   color: colors.gray900,
-  '@media': { '(min-width: 768px)': { fontSize: '48px' } },
+  '@media': { [media.desktop]: { fontSize: '48px' } },
 })
 
 export const benefitsIntroDesc = style({
@@ -1279,7 +1155,7 @@ export const benefitsIntroDesc = style({
   fontWeight: 500,
   lineHeight: 1.6,
   color: colors.gray500,
-  '@media': { '(min-width: 768px)': { fontSize: '24px' } },
+  '@media': { [media.desktop]: { fontSize: '24px' } },
 })
 
 export const benefitList = style({ display: 'flex', flexDirection: 'column', gap: '24px' })
@@ -1300,7 +1176,7 @@ export const benefitTitle = style({
   fontWeight: 700,
   color: colors.gray700,
   marginBottom: '12px',
-  '@media': { '(min-width: 768px)': { fontSize: '36px' } },
+  '@media': { [media.desktop]: { fontSize: '36px' } },
 })
 
 export const benefitDesc = style({
@@ -1309,7 +1185,7 @@ export const benefitDesc = style({
   lineHeight: 1.5,
   color: colors.gray700,
   maxWidth: '420px',
-  '@media': { '(min-width: 768px)': { fontSize: '20px' } },
+  '@media': { [media.desktop]: { fontSize: '20px' } },
 })
 
 export const benefitBgImage = style({
@@ -1339,7 +1215,7 @@ export const stepsEyebrow = style({
   color: colors.gray900,
   textAlign: 'center',
   marginBottom: '16px',
-  '@media': { '(min-width: 768px)': { fontSize: '20px', marginBottom: '20px' } },
+  '@media': { [media.desktop]: { fontSize: '20px', marginBottom: '20px' } },
 })
 
 export const stepsMainTitle = style({
@@ -1349,7 +1225,7 @@ export const stepsMainTitle = style({
   letterSpacing: '-0.02em',
   color: colors.gray900,
   textAlign: 'center',
-  '@media': { '(min-width: 768px)': { fontSize: '40px' } },
+  '@media': { [media.desktop]: { fontSize: '40px' } },
 })
 
 export const stepsLead = style({
@@ -1360,7 +1236,7 @@ export const stepsLead = style({
   letterSpacing: '-0.03em',
   color: colors.gray900,
   textAlign: 'center',
-  '@media': { '(min-width: 768px)': { fontSize: '20px', marginTop: '20px' } },
+  '@media': { [media.desktop]: { fontSize: '20px', marginTop: '20px' } },
 })
 
 export const stepsBanner = style({
@@ -1372,12 +1248,12 @@ export const stepsBanner = style({
   padding: '16px 24px',
   backgroundColor: colors.gray50,
   borderRadius: '20px',
-  '@media': { '(min-width: 768px)': { marginTop: '48px', minHeight: '68px' } },
+  '@media': { [media.desktop]: { marginTop: '48px', minHeight: '68px' } },
 })
 
 export const stepsBannerWide = style({
   marginTop: '48px',
-  '@media': { '(min-width: 768px)': { marginTop: '64px' } },
+  '@media': { [media.desktop]: { marginTop: '64px' } },
 })
 
 export const stepsBannerText = style({
@@ -1387,7 +1263,7 @@ export const stepsBannerText = style({
   letterSpacing: '-0.02em',
   color: colors.gray900,
   textAlign: 'center',
-  '@media': { '(min-width: 768px)': { fontSize: '22px' } },
+  '@media': { [media.desktop]: { fontSize: '22px' } },
 })
 
 globalStyle(`${stepsBannerText} strong`, {
@@ -1402,7 +1278,7 @@ export const stepsBannerTextStrong = style({
   letterSpacing: '-0.02em',
   color: colors.primary500,
   textAlign: 'center',
-  '@media': { '(min-width: 768px)': { fontSize: '22px' } },
+  '@media': { [media.desktop]: { fontSize: '22px' } },
 })
 
 export const workflowRow = style({
@@ -1413,7 +1289,7 @@ export const workflowRow = style({
   justifyContent: 'center',
   gap: '8px 4px',
   '@media': {
-    '(min-width: 1024px)': {
+    [mediaWide]: {
       flexWrap: 'nowrap',
       gap: '8px',
       justifyContent: 'space-between',
@@ -1439,7 +1315,7 @@ export const workflowChip = style({
   textAlign: 'center',
   minWidth: '140px',
   '@media': {
-    '(min-width: 1024px)': {
+    [mediaWide]: {
       minWidth: 0,
       flex: 1,
       padding: '16px 12px',
@@ -1453,7 +1329,7 @@ export const workflowKicker = style({
   lineHeight: 1.45,
   letterSpacing: '-0.02em',
   color: colors.primary500,
-  '@media': { '(min-width: 768px)': { fontSize: '14px' } },
+  '@media': { [media.desktop]: { fontSize: '14px' } },
 })
 
 export const workflowTitle = style({
@@ -1462,7 +1338,7 @@ export const workflowTitle = style({
   lineHeight: 1.45,
   letterSpacing: '-0.02em',
   color: colors.primary500,
-  '@media': { '(min-width: 768px)': { fontSize: '18px' } },
+  '@media': { [media.desktop]: { fontSize: '18px' } },
 })
 
 export const workflowArrow = style({
@@ -1470,7 +1346,7 @@ export const workflowArrow = style({
   fontWeight: 600,
   color: colors.gray700,
   flexShrink: 0,
-  '@media': { '(min-width: 768px)': { fontSize: '22px' } },
+  '@media': { [media.desktop]: { fontSize: '22px' } },
 })
 
 export const featureMapGrid = style({
@@ -1479,7 +1355,7 @@ export const featureMapGrid = style({
   gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
   gap: '28px 12px',
   '@media': {
-    '(min-width: 768px)': {
+    [media.desktop]: {
       gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
       gap: '28px 16px',
     },
@@ -1517,7 +1393,7 @@ export const featureNameChip = style({
     '&[data-accent="true"]': { backgroundColor: colors.primary200 },
   },
   '@media': {
-    '(min-width: 768px)': {
+    [media.desktop]: {
       minHeight: '88px',
       borderRadius: '20px',
       fontSize: '15px',
@@ -1539,7 +1415,7 @@ export const featureConnector = style({
   justifyContent: 'center',
   height: '36px',
   width: '100%',
-  '@media': { '(min-width: 768px)': { height: '44px' } },
+  '@media': { [media.desktop]: { height: '44px' } },
 })
 
 export const featureConnectorLine = style({
@@ -1566,7 +1442,7 @@ export const featureOutcomeChip = style({
   letterSpacing: '-0.02em',
   color: colors.white,
   '@media': {
-    '(min-width: 768px)': {
+    [media.desktop]: {
       minHeight: '88px',
       borderRadius: '20px',
       fontSize: '15px',
@@ -1594,8 +1470,8 @@ export const ctaSection = style({
   overflow: 'hidden',
   backgroundColor: colors.dark,
   color: colors.white,
-  padding: `${spaceSectionMobile} 0`,
-  '@media': { [media.desktop]: { padding: `${spaceSectionDesktop} 0` } },
+  padding: '72px 0 88px',
+  '@media': { [media.desktop]: { padding: '100px 0' } },
 })
 
 export const ctaGiftWrap = style({
@@ -1604,56 +1480,52 @@ export const ctaGiftWrap = style({
   bottom: '8%',
   pointerEvents: 'none',
   opacity: 0.45,
-  '@media': { '(min-width: 768px)': { right: '-10%', bottom: '10%', opacity: 1 } },
+  '@media': { [media.desktop]: { right: '-10%', bottom: '10%', opacity: 1 } },
 })
 
 export const ctaGift = style({
   width: 'auto',
   height: 'auto',
-  maxWidth: 'min(220px, 48vw)',
-  maxHeight: '220px',
+  maxWidth: 'min(180px, 42vw)',
+  maxHeight: '180px',
   objectFit: 'contain',
   opacity: 0.28,
   '@media': {
-    '(min-width: 768px)': { maxWidth: 'min(420px, 55vw)', maxHeight: '420px', opacity: 0.35 },
+    [media.desktop]: { maxWidth: 'min(260px, 32vw)', maxHeight: '260px', opacity: 0.35 },
   },
 })
 
-export const ctaInner = style({
-  position: 'relative',
-  zIndex: 1,
-  maxWidth: '40ch',
-})
+export const ctaInner = style({ position: 'relative', zIndex: 1, maxWidth: '640px' })
 
 export const ctaLogo = style({
   height: '32px',
   width: 'auto',
-  marginBottom: spaceCard,
+  marginBottom: '24px',
   objectFit: 'contain',
-  '@media': { [media.desktop]: { height: '40px', marginBottom: spaceCard } },
+  '@media': { [media.desktop]: { height: '40px', marginBottom: '48px' } },
 })
 
 export const ctaTitle = style({
-  ...fontStyles.display,
+  fontSize: '28px',
+  fontWeight: 700,
   lineHeight: 1.35,
   letterSpacing: '-0.03em',
   wordBreak: 'keep-all',
-  maxWidth: '40ch',
-  '@media': { [media.desktop]: { fontSize: '48px', fontWeight: '700', lineHeight: 1.4 } },
+  '@media': { [media.desktop]: { fontSize: '48px', lineHeight: 1.4 } },
 })
 
 export const ctaDesc = style({
-  ...fontStyles.bodyLg,
-  marginTop: spaceCard,
+  marginTop: '16px',
+  fontSize: '16px',
+  fontWeight: 500,
   lineHeight: 1.6,
   color: colors.gray300,
   wordBreak: 'keep-all',
-  maxWidth: '40ch',
-  '@media': { [media.desktop]: { ...fontStyles.headingSm, color: colors.gray300, marginTop: spaceCard } },
+  '@media': { [media.desktop]: { fontSize: '22px', marginTop: '24px' } },
 })
 
 export const ctaActions = style({
-  marginTop: spaceCard,
+  marginTop: '28px',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'stretch',
@@ -1662,75 +1534,70 @@ export const ctaActions = style({
     [media.desktop]: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      marginTop: spaceCard,
+      marginTop: '40px',
     },
   },
 })
 
 globalStyle(`${ctaActions} a`, {
   width: '100%',
-  minHeight: '44px',
+  minHeight: '52px',
   '@media': {
-    [media.desktop]: { width: 'auto' },
+    [media.desktop]: { width: 'auto', minHeight: 'auto' },
   },
 })
 
 export const footer = style({
-  padding: `${spaceCard} 0 calc(108px + env(safe-area-inset-bottom))`,
+  padding: '28px 0 calc(108px + env(safe-area-inset-bottom))',
   backgroundColor: colors.dark,
-  borderTop: `1px solid ${colors.gray700}`,
-  '@media': { [media.desktop]: { padding: `${spaceCard} 0` } },
+  borderTop: '1px solid rgba(255,255,255,0.08)',
+  '@media': { [media.desktop]: { padding: '32px 0' } },
 })
 
-export const footerText = style({
-  ...fontStyles.bodyMd,
-  color: colors.gray500,
-  textAlign: 'center',
-})
+export const footerText = style({ fontSize: '14px', color: colors.gray500, textAlign: 'center' })
 
 export const mobileStickyBar = style({
   position: 'fixed',
   left: 0,
   right: 0,
   bottom: 0,
-  zIndex: 90,
+  zIndex: zIndex.floatingBar,
   display: 'flex',
   flexDirection: 'column',
   gap: '8px',
-  padding: `12px ${spaceCard} calc(12px + env(safe-area-inset-bottom))`,
-  backgroundColor: colors.white,
+  padding: '12px 16px calc(12px + env(safe-area-inset-bottom))',
+  backgroundColor: `color-mix(in srgb, ${colors.white} 96%, transparent)`,
+  backdropFilter: 'blur(16px)',
   borderTop: `1px solid ${colors.gray75}`,
+  boxShadow: `0 -8px 28px color-mix(in srgb, ${colors.primary500} 12%, transparent)`,
   '@media': { [media.desktop]: { display: 'none' } },
 })
 
 export const mobileStickyText = style({
-  ...fontStyles.labelSm,
   margin: 0,
   textAlign: 'center',
+  fontSize: '13px',
   fontWeight: 600,
   color: colors.gray600,
   letterSpacing: '-0.02em',
-  maxWidth: '40ch',
-  marginLeft: 'auto',
-  marginRight: 'auto',
 })
 
 export const mobileStickyButton = style([
   ctaButtonLarge,
   {
     width: '100%',
-    minHeight: '44px',
-    borderRadius: radiusCard,
+    minHeight: '52px',
+    borderRadius: '12px',
   },
 ])
 
 export const textBlock = style({
   selectors: {
     '&[data-reversed="true"]': {
-      '@media': { '(min-width: 1024px)': { order: 2 } },
+      '@media': { [mediaWide]: { order: 2 } },
     },
     '&[data-reversed="false"]': {
-      '@media': { '(min-width: 1024px)': { order: 1 } },
+      '@media': { [mediaWide]: { order: 1 } },
     },
   },
 })
@@ -1738,10 +1605,10 @@ export const textBlock = style({
 export const imageBlock = style({
   selectors: {
     '&[data-reversed="true"]': {
-      '@media': { '(min-width: 1024px)': { order: 1 } },
+      '@media': { [mediaWide]: { order: 1 } },
     },
     '&[data-reversed="false"]': {
-      '@media': { '(min-width: 1024px)': { order: 2 } },
+      '@media': { [mediaWide]: { order: 2 } },
     },
   },
 })

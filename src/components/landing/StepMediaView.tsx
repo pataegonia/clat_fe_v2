@@ -46,8 +46,7 @@ export default function StepMediaView({ media }: Props) {
           width={1200}
           height={900}
           className={s.stepFigmaSingle}
-          style={media.round ? { borderRadius: media.round } : undefined}
-          sizes="(max-width: 768px) 100vw, 560px"
+          sizes="(max-width: 767px) 100vw, 560px"
           unoptimized
         />
       )

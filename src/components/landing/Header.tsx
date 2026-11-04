@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion'
+import { getCookie } from 'cookies-next'
 import LandingImage from '@/components/landing/LandingImage'
 import { MotionButton } from '@/components/motion/MotionButton'
-import { APP_URL } from '@/lib/landing-content'
+import { LOGIN_URL } from '@/lib/landing-content'
 import * as s from '@/app/landing.css'
 
 const NAV_ITEMS = [
@@ -15,9 +16,17 @@ const NAV_ITEMS = [
   { href: '#steps', label: '사용법' },
 ]
 
+function resolveStartHref(): string {
+  if (typeof window === 'undefined') return LOGIN_URL
+  const fromCookie = getCookie('accessToken')
+  const fromStorage = window.localStorage.getItem('accessToken')
+  return fromCookie || fromStorage ? '/home' : LOGIN_URL
+}
+
 export default function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [startHref, setStartHref] = useState(LOGIN_URL)
   const reduceMotion = useReducedMotion()
 
   useEffect(() => {
@@ -25,6 +34,10 @@ export default function Header() {
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    setStartHref(resolveStartHref())
   }, [])
 
   useEffect(() => {
@@ -55,8 +68,8 @@ export default function Header() {
         </nav>
 
         <div className={s.headerActions}>
-          <MotionButton href={APP_URL} className={`${s.ctaButton} ${s.headerDesktopCta}`}>
-            무료로 시작하기
+          <MotionButton href={startHref} className={`${s.ctaButton} ${s.headerDesktopCta}`}>
+            클랫 시작하기
           </MotionButton>
 
           <button
@@ -106,8 +119,8 @@ export default function Header() {
                 {item.label}
               </motion.a>
             ))}
-            <MotionButton href={APP_URL} className={s.ctaButtonLarge}>
-              무료로 시작하기
+            <MotionButton href={startHref} className={s.ctaButtonLarge}>
+              클랫 시작하기
             </MotionButton>
           </motion.nav>
         )}

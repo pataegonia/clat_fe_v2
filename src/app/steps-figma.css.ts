@@ -1,63 +1,53 @@
 import { style } from '@vanilla-extract/css'
 import { colors } from '@/styles/tokens/colors'
 import { media } from '@/styles/tokens/breakpoints'
-import { fontStyles } from '@/styles/tokens/typography'
 import { baseCardStyleRule } from '@/styles/tokens/card'
 
-const spaceCard = baseCardStyleRule.padding as string
-const spaceSectionMobile = '56px'
-const spaceSectionDesktop = '120px'
+const radiusCard = baseCardStyleRule.borderRadius as string
+const mediaWide = 'screen and (min-width: 1024px)'
 
 export const stepsFigmaRoot = style({
   width: '100%',
-  maxWidth: '100%',
-  overflowX: 'clip',
   backgroundColor: colors.white,
 })
 
 export const stepsIntro = style({
-  maxWidth: '40ch',
+  maxWidth: '720px',
   margin: '0 auto',
-  padding: `${spaceSectionMobile} ${spaceCard} ${spaceCard}`,
+  padding: '48px 20px 24px',
   textAlign: 'center',
   '@media': {
-    [media.desktop]: { padding: `${spaceSectionDesktop} ${spaceCard} ${spaceSectionMobile}` },
+    [media.desktop]: { padding: '96px 32px 48px' },
   },
 })
 
 export const stepsIntroEyebrow = style({
-  ...fontStyles.headingSm,
+  fontSize: '14px',
   fontWeight: 700,
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
   color: colors.primary500,
   marginBottom: '12px',
-  '@media': {
-    [media.desktop]: { ...fontStyles.headingMd, fontWeight: 700, color: colors.primary500 },
-  },
 })
 
 export const stepsIntroTitle = style({
-  ...fontStyles.headingMd,
+  fontSize: '24px',
+  fontWeight: 700,
   lineHeight: 1.35,
   letterSpacing: '-0.03em',
   color: colors.gray900,
   wordBreak: 'keep-all',
-  maxWidth: '40ch',
-  margin: '0 auto',
-  '@media': { [media.desktop]: { fontSize: '40px', fontWeight: '700' } },
+  '@media': { [media.desktop]: { fontSize: '40px' } },
 })
 
 export const stepsIntroLead = style({
-  ...fontStyles.bodyLg,
-  marginTop: spaceCard,
+  marginTop: '16px',
+  fontSize: '16px',
+  fontWeight: 500,
   lineHeight: 1.6,
   letterSpacing: '-0.02em',
   color: colors.gray700,
-  maxWidth: '40ch',
-  marginLeft: 'auto',
-  marginRight: 'auto',
-  '@media': { [media.desktop]: { ...fontStyles.headingSm, color: colors.gray700, marginTop: spaceCard } },
+  '@media': { [media.desktop]: { fontSize: '20px', marginTop: '20px' } },
 })
 
 export const stepFigmaSlide = style({
@@ -76,32 +66,32 @@ export const stepFigmaSlideWhite = style({
 
 export const stepFigmaEllipse = style({
   position: 'absolute',
-  width: '140%',
-  maxWidth: '1751px',
+  width: '110%',
+  maxWidth: '1400px',
   height: 'auto',
   pointerEvents: 'none',
   zIndex: 0,
   opacity: 0.55,
   display: 'none',
   '@media': {
-    '(min-width: 768px)': { display: 'block', opacity: 0.85 },
+    [media.desktop]: { display: 'block', opacity: 0.75 },
   },
 })
 
 export const stepFigmaEllipseLeft = style({
-  left: '-40%',
-  top: '-12%',
+  left: '-18%',
+  top: '-8%',
   '@media': {
-    '(min-width: 1024px)': { left: '-32%', top: '-8%' },
+    [mediaWide]: { left: '-14%', top: '-6%' },
   },
 })
 
 export const stepFigmaEllipseRight = style({
-  right: '-40%',
+  right: '-18%',
   left: 'auto',
-  top: '-12%',
+  top: '-8%',
   '@media': {
-    '(min-width: 1024px)': { right: '-32%', top: '-10%' },
+    [mediaWide]: { right: '-14%', top: '-6%' },
   },
 })
 
@@ -115,24 +105,25 @@ export const stepFigmaInner = style({
   maxWidth: '1200px',
   margin: '0 auto',
   padding: '28px 20px',
+  boxSizing: 'border-box',
   '@media': {
-    '(min-width: 768px)': {
+    [media.desktop]: {
       gap: '32px',
       padding: '40px 40px',
       maxWidth: '1320px',
     },
-    '(min-width: 1024px)': {
+    [mediaWide]: {
       gridTemplateColumns: '1.05fr 0.95fr',
       gap: '48px',
-      padding: '48px 64px',
-      maxWidth: '1440px',
+      padding: '48px 40px',
+      maxWidth: '1320px',
     },
   },
 })
 
 export const stepFigmaInnerTextLeft = style({
   '@media': {
-    '(min-width: 1024px)': {
+    [mediaWide]: {
       gridTemplateColumns: '0.95fr 1.05fr',
     },
   },
@@ -140,7 +131,7 @@ export const stepFigmaInnerTextLeft = style({
 
 export const stepFigmaInnerParent = style({
   '@media': {
-    '(min-width: 1024px)': {
+    [mediaWide]: {
       gridTemplateColumns: '0.8fr 1.2fr',
       alignItems: 'start',
     },
@@ -155,11 +146,11 @@ export const stepFigmaMedia = style({
 })
 
 export const stepFigmaMediaOrder1 = style({
-  '@media': { '(min-width: 1024px)': { order: 1 } },
+  '@media': { [mediaWide]: { order: 1 } },
 })
 
 export const stepFigmaMediaOrder2 = style({
-  '@media': { '(min-width: 1024px)': { order: 2 } },
+  '@media': { [mediaWide]: { order: 2 } },
 })
 
 export const stepFigmaCopy = style({
@@ -168,11 +159,11 @@ export const stepFigmaCopy = style({
 })
 
 export const stepFigmaCopyOrder1 = style({
-  '@media': { '(min-width: 1024px)': { order: 1 } },
+  '@media': { [mediaWide]: { order: 1 } },
 })
 
 export const stepFigmaCopyOrder2 = style({
-  '@media': { '(min-width: 1024px)': { order: 2 } },
+  '@media': { [mediaWide]: { order: 2 } },
 })
 
 export const stepFigmaMeta = style({
@@ -182,7 +173,7 @@ export const stepFigmaMeta = style({
   marginBottom: '16px',
   flexWrap: 'wrap',
   '@media': {
-    '(min-width: 768px)': { gap: '16px', marginBottom: '20px' },
+    [media.desktop]: { gap: '16px', marginBottom: '20px' },
   },
 })
 
@@ -199,8 +190,8 @@ export const stepFigmaBadge = style({
   letterSpacing: '-0.03em',
   lineHeight: 1.4,
   '@media': {
-    '(min-width: 768px)': { fontSize: '18px', padding: '4px 12px' },
-    '(min-width: 1024px)': { fontSize: '22px' },
+    [media.desktop]: { fontSize: '18px', padding: '4px 12px' },
+    [mediaWide]: { fontSize: '22px' },
   },
 })
 
@@ -210,8 +201,8 @@ export const stepFigmaTab = style({
   color: colors.gray700,
   letterSpacing: '-0.03em',
   '@media': {
-    '(min-width: 768px)': { fontSize: '18px' },
-    '(min-width: 1024px)': { fontSize: '22px' },
+    [media.desktop]: { fontSize: '18px' },
+    [mediaWide]: { fontSize: '22px' },
   },
 })
 
@@ -224,8 +215,8 @@ export const stepFigmaTitle = style({
   wordBreak: 'keep-all',
   overflowWrap: 'break-word',
   '@media': {
-    '(min-width: 768px)': { fontSize: '36px' },
-    '(min-width: 1024px)': { fontSize: '44px', lineHeight: 1.3 },
+    [media.desktop]: { fontSize: '36px' },
+    [mediaWide]: { fontSize: '44px', lineHeight: 1.3 },
   },
 })
 
@@ -233,13 +224,13 @@ export const stepFigmaTitle = style({
 export const stepTitleBreak = style({
   display: 'none',
   '@media': {
-    '(min-width: 768px)': { display: 'block' },
+    [media.desktop]: { display: 'block' },
   },
 })
 
 export const stepTitleSoftSpace = style({
   '@media': {
-    '(min-width: 768px)': { display: 'none' },
+    [media.desktop]: { display: 'none' },
   },
 })
 
@@ -255,8 +246,8 @@ export const stepFigmaDesc = style({
   color: colors.gray700,
   wordBreak: 'keep-all',
   '@media': {
-    '(min-width: 768px)': { fontSize: '20px', marginTop: '28px', gap: '10px' },
-    '(min-width: 1024px)': { fontSize: '24px', marginTop: '32px' },
+    [media.desktop]: { fontSize: '20px', marginTop: '28px', gap: '10px' },
+    [mediaWide]: { fontSize: '24px', marginTop: '32px' },
   },
 })
 
@@ -266,8 +257,9 @@ export const stepFigmaStack = style({
   maxWidth: '520px',
   margin: '0 auto',
   aspectRatio: '640 / 560',
+  overflow: 'hidden',
   '@media': {
-    '(min-width: 1024px)': { maxWidth: '640px', margin: 0 },
+    [mediaWide]: { maxWidth: '640px', margin: 0 },
   },
 })
 
@@ -277,7 +269,7 @@ export const stepFigmaStackTop = style({
   top: '0',
   width: '58%',
   height: 'auto',
-  borderRadius: '20px',
+  borderRadius: radiusCard,
   boxShadow: '0 8px 28px rgba(0,0,0,0.08)',
   zIndex: 1,
 })
@@ -288,7 +280,7 @@ export const stepFigmaStackBottom = style({
   top: '26%',
   width: '66%',
   height: 'auto',
-  borderRadius: '20px',
+  borderRadius: radiusCard,
   boxShadow: '0 8px 28px rgba(0,0,0,0.1)',
   zIndex: 2,
 })
@@ -297,13 +289,13 @@ export const stepFigmaSingle = style({
   display: 'block',
   width: '100%',
   height: 'auto',
-  maxHeight: 'min(42vh, 420px)',
+  maxHeight: '420px',
   objectFit: 'contain',
-  borderRadius: '16px',
-  boxShadow: '0 8px 28px rgba(0, 0, 0, 0.08)',
+  borderRadius: radiusCard,
+  boxShadow: '0 8px 28px rgba(0,0,0,0.08)',
   margin: '0 auto',
   '@media': {
-    '(min-width: 768px)': { maxHeight: 'min(62vh, 640px)', borderRadius: '20px' },
+    [media.desktop]: { maxHeight: '560px' },
   },
 })
 
@@ -320,17 +312,17 @@ export const stepCluster = style({
   `,
   gap: '12px',
   alignItems: 'start',
+  overflow: 'hidden',
   '@media': {
-    '(min-width: 768px)': {
+    [media.desktop]: {
       maxWidth: '720px',
       marginLeft: 'auto',
       marginRight: 0,
       gap: '16px',
     },
-    '(min-width: 1024px)': {
+    [mediaWide]: {
       display: 'block',
-      aspectRatio: '720 / 760',
-      minHeight: '420px',
+      aspectRatio: '720 / 700',
     },
   },
 })
@@ -339,10 +331,10 @@ export const stepClusterStart = style({
   gridArea: 'start',
   width: '100%',
   height: 'auto',
-  borderRadius: '14px',
+  borderRadius: radiusCard,
   boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
   '@media': {
-    '(min-width: 1024px)': {
+    [mediaWide]: {
       position: 'absolute',
       left: '0',
       top: '0',
@@ -356,10 +348,10 @@ export const stepClusterDetail = style({
   gridArea: 'detail',
   width: '100%',
   height: 'auto',
-  borderRadius: '14px',
+  borderRadius: radiusCard,
   boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
   '@media': {
-    '(min-width: 1024px)': {
+    [mediaWide]: {
       position: 'absolute',
       right: '0',
       top: '0',
@@ -376,7 +368,7 @@ export const stepClusterPhoneA = style({
   height: 'auto',
   justifySelf: 'center',
   '@media': {
-    '(min-width: 1024px)': {
+    [mediaWide]: {
       position: 'absolute',
       left: '4%',
       bottom: '0',
@@ -394,7 +386,7 @@ export const stepClusterPhoneB = style({
   height: 'auto',
   justifySelf: 'center',
   '@media': {
-    '(min-width: 1024px)': {
+    [mediaWide]: {
       position: 'absolute',
       left: '30%',
       bottom: '0',
@@ -412,7 +404,7 @@ export const stepPair = style({
   gap: '10px',
   width: '100%',
   '@media': {
-    '(min-width: 768px)': { gap: '16px' },
+    [media.desktop]: { gap: '16px' },
   },
 })
 
@@ -420,7 +412,7 @@ export const stepPairLeft = style({
   width: '46%',
   maxWidth: '360px',
   height: 'auto',
-  borderRadius: '20px',
+  borderRadius: radiusCard,
   boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
 })
 
@@ -428,7 +420,7 @@ export const stepPairRight = style({
   width: '38%',
   maxWidth: '300px',
   height: 'auto',
-  borderRadius: '20px',
+  borderRadius: radiusCard,
   boxShadow: '0 8px 24px rgba(0,0,0,0.08)',
 })
 
@@ -437,7 +429,7 @@ export const stepPairArrow = style({
   fontWeight: 600,
   color: colors.primary500,
   flexShrink: 0,
-  '@media': { '(min-width: 768px)': { fontSize: '36px' } },
+  '@media': { [media.desktop]: { fontSize: '36px' } },
 })
 
 export const stepParentPhone = style({
@@ -447,8 +439,8 @@ export const stepParentPhone = style({
   height: 'auto',
   margin: '0 auto',
   '@media': {
-    '(min-width: 768px)': { maxWidth: '340px' },
-    '(min-width: 1024px)': { maxWidth: '380px', margin: 0 },
+    [media.desktop]: { maxWidth: '340px' },
+    [mediaWide]: { maxWidth: '380px', margin: 0 },
   },
 })
 
@@ -456,7 +448,7 @@ export const stepParentNotes = style({
   display: 'flex',
   flexDirection: 'column',
   gap: '20px',
-  '@media': { '(min-width: 768px)': { gap: '24px' } },
+  '@media': { [media.desktop]: { gap: '24px' } },
 })
 
 export const stepParentNote = style({
@@ -482,8 +474,8 @@ export const stepParentNoteTitle = style({
   color: colors.gray900,
   wordBreak: 'keep-all',
   '@media': {
-    '(min-width: 768px)': { fontSize: '28px' },
-    '(min-width: 1024px)': { fontSize: '32px' },
+    [media.desktop]: { fontSize: '28px' },
+    [mediaWide]: { fontSize: '32px' },
   },
 })
 
@@ -495,7 +487,7 @@ export const stepParentNoteDesc = style({
   color: colors.gray700,
   wordBreak: 'keep-all',
   '@media': {
-    '(min-width: 768px)': { fontSize: '18px' },
-    '(min-width: 1024px)': { fontSize: '20px' },
+    [media.desktop]: { fontSize: '18px' },
+    [mediaWide]: { fontSize: '20px' },
   },
 })

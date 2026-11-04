@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import LandingImage from '@/components/landing/LandingImage'
 import Reveal from '@/components/motion/Reveal'
 import { MotionButton } from '@/components/motion/MotionButton'
-import { APP_URL } from '@/lib/landing-content'
+import { SIGNUP_URL } from '@/lib/landing-content'
 import { fadeUp } from '@/lib/motion-presets'
 import * as s from '@/app/landing.css'
 
@@ -60,7 +60,7 @@ export default function CtaSection() {
             whileInView="visible"
             viewport={{ once: true }}
           >
-            <MotionButton href={APP_URL} className={s.ctaShimmerButton}>
+            <MotionButton href={SIGNUP_URL} className={s.ctaShimmerButton}>
               무료로 시작하기
             </MotionButton>
           </motion.div>

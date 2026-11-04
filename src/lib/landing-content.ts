@@ -1,4 +1,7 @@
-export const APP_URL = '/login'
+/** 본문 CTA — 회원가입 */
+export const SIGNUP_URL = '/signup'
+/** 헤더 시작 — 비로그인 시 로그인 (로그인 상태면 /home으로 보냄) */
+export const LOGIN_URL = '/login'
 
 export const painPoints = [
   {
@@ -284,14 +287,3 @@ export const steps: Step[] = [
     ellipseSide: 'right',
   },
 ]
-
-/** 히어로 슬라이드 — STEP 0~6 미디어 묶음 (학부모 제외, 7세트) */
-export const heroSlides = steps
-  .filter((step) => step.id.startsWith('step-'))
-  .map((step) => ({
-    id: step.id,
-    media: step.media,
-    alt: step.media.alt,
-    step: step.step,
-    tab: step.tab ?? step.step,
-  }))
