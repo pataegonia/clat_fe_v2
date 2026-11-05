@@ -33,6 +33,7 @@ import { TutorialLayer } from './TutorialLayer'
 import * as styles from './tutorial.css'
 
 const DISMISS_KEY = 'clat-tutorial-start-dismissed'
+const INTRO_CLOSED_KEY = 'clat-tutorial-intro-closed'
 
 interface TutorialContextValue {
   status: TutorialState['status']
@@ -48,6 +49,8 @@ interface TutorialContextValue {
   anchor: string | null
   screenTour: ScreenTourId | null
   ready: boolean
+  /** 첫 로그인 튜토리얼이 끝나거나 닫히기 전에는 업데이트 모달을 열지 않는다. */
+  holdWhatsNew: boolean
   requestReopen: () => void
   markSeen: (screen: TutorialScreen) => void
   replay: (screen: ScreenTourId) => void
@@ -72,6 +75,7 @@ const idleTour: TutorialContextValue = {
   anchor: null,
   screenTour: null,
   ready: false,
+  holdWhatsNew: false,
   requestReopen: () => {},
   markSeen: () => {},
   replay: () => {},
@@ -104,6 +108,10 @@ export default function TutorialProvider({ children }: { children: ReactNode }) 
   const [closedScreen, setClosedScreen] = useState<string | null>(null)
   const [forceKind, setForceKind] = useState<'restart' | 'finish' | null>(null)
   const [leaveOpen, setLeaveOpen] = useState(false)
+  const [introDismissed, setIntroDismissed] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return sessionStorage.getItem(INTRO_CLOSED_KEY) === '1'
+  })
   const lastPush = useRef<{ href: string; at: number } | null>(null)
   const followedHref = useRef<string | null>(null)
   const returning = useRef(false)
@@ -180,11 +188,18 @@ export default function TutorialProvider({ children }: { children: ReactNode }) 
     return () => window.clearInterval(timer)
   }, [router, screenBeat, state.status])
 
+  const dismissIntro = useCallback(() => {
+    sessionStorage.setItem(DISMISS_KEY, '1')
+    sessionStorage.setItem(INTRO_CLOSED_KEY, '1')
+    setIntroDismissed(true)
+    setStartOpen(false)
+  }, [])
+
   useEffect(() => {
     if (!ready || state.status !== 'none' || !state.auto_open || pathname !== '/home') return
-    if (sessionStorage.getItem(DISMISS_KEY) === '1') return
+    if (introDismissed || sessionStorage.getItem(DISMISS_KEY) === '1') return
     setStartOpen(true)
-  }, [ready, state.status, state.auto_open, pathname])
+  }, [introDismissed, ready, state.status, state.auto_open, pathname])
 
   useEffect(() => {
     if (state.status !== 'in_progress') {
@@ -417,6 +432,11 @@ export default function TutorialProvider({ children }: { children: ReactNode }) 
       anchor: beat?.anchor ?? null,
       screenTour,
       ready,
+      holdWhatsNew:
+        !ready ||
+        doneOpen ||
+        state.status === 'in_progress' ||
+        (state.status === 'none' && state.auto_open && !introDismissed),
       requestReopen: () => setReopenTick((tick) => tick + 1),
       markSeen: dismissScreen,
       replay,
@@ -424,7 +444,20 @@ export default function TutorialProvider({ children }: { children: ReactNode }) 
       resume: () => void run(() => tutorialApi.resume()),
       restart: () => void run(() => tutorialApi.restart(), 'restart'),
     }),
-    [beat?.anchor, dismissScreen, dismissTick, hidden, ready, reopenTick, replay, run, screenTour, state],
+    [
+      beat?.anchor,
+      dismissScreen,
+      dismissTick,
+      doneOpen,
+      hidden,
+      introDismissed,
+      ready,
+      reopenTick,
+      replay,
+      run,
+      screenTour,
+      state,
+    ],
   )
 
   const showLayer = state.status === 'in_progress' && !hidden && located && Boolean(beat) && !leaveOpen && !forceKind
@@ -456,14 +489,7 @@ export default function TutorialProvider({ children }: { children: ReactNode }) 
           onReopen={() => setScreenIndex(0)}
         />
       ) : null}
-      <Modal
-        isOpen={startOpen}
-        onClose={() => {
-          setStartOpen(false)
-          sessionStorage.setItem(DISMISS_KEY, '1')
-        }}
-        size="sm"
-      >
+      <Modal isOpen={startOpen} onClose={dismissIntro} size="sm">
         <div className={styles.dialogBody}>
           <Text variant="headingMd" as="h2">
             수업 문자를 받아 봐요
@@ -472,15 +498,7 @@ export default function TutorialProvider({ children }: { children: ReactNode }) 
             튜토리얼 수업으로 틀, 출결, 결과 문자까지 해 봐요. 튜토리얼 학생은 끝나면 지워져요.
           </Text>
           <div className={styles.dialogActions}>
-            <Button
-              variant="ghost"
-              size="md"
-              fullWidth
-              onClick={() => {
-                setStartOpen(false)
-                sessionStorage.setItem(DISMISS_KEY, '1')
-              }}
-            >
+            <Button variant="ghost" size="md" fullWidth onClick={dismissIntro}>
               나중에 하기
             </Button>
             <Button
@@ -489,8 +507,8 @@ export default function TutorialProvider({ children }: { children: ReactNode }) 
               fullWidth
               disabled={busy}
               onClick={() => {
-                setStartOpen(false)
                 sessionStorage.setItem(DISMISS_KEY, '1')
+                setStartOpen(false)
                 void run(() => tutorialApi.start())
               }}
             >
