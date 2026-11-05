@@ -16,6 +16,7 @@ export const tableWrapStyle = style({
 
 export const tableStyle = style({
   width: '100%',
+  tableLayout: 'fixed',
   borderCollapse: 'collapse',
   border: 'none',
   minWidth: '720px',
@@ -55,12 +56,12 @@ export const thStyle = style({ ...baseThStyles, paddingRight: '16px' })
 export const tdStyle = style({ ...baseTdStyles, paddingRight: '16px' })
 
 // ?숈깮, 異쒓껐: 肄섑뀗痢??덈퉬 + paddingRight 36
-export const thCompactStyle = style({ ...baseThStyles, paddingRight: '36px', width: '1%' })
-export const tdCompactStyle = style({ ...baseTdStyles, paddingRight: '36px', width: '1%' })
+export const thCompactStyle = style({ ...baseThStyles, paddingRight: '36px' })
+export const tdCompactStyle = style({ ...baseTdStyles, paddingRight: '36px' })
 
 // 怨쇱젣, ?ㅻ떟?명듃, ?쒗뿕 ?먯닔: ?ㅻ뜑 肄섑뀗痢?湲곗? ?섏텞
-export const thShrinkStyle = style({ ...baseThStyles, paddingRight: '16px', width: '1%' })
-export const tdShrinkStyle = style({ ...baseTdStyles, paddingRight: '16px', width: '1%' })
+export const thShrinkStyle = style({ ...baseThStyles, paddingRight: '16px' })
+export const tdShrinkStyle = style({ ...baseTdStyles, paddingRight: '16px' })
 
 export const cellButtonGroupStyle = style({
   display: 'flex',
@@ -226,8 +227,6 @@ export const nameCellStyle = style({
 export const attendanceThStyle = style({
   ...baseThStyles,
   paddingRight: '16px',
-  width: '1%',
-  minWidth: '280px',
   whiteSpace: 'normal',
   verticalAlign: 'top',
 })
@@ -349,8 +348,6 @@ export const nameStickyCellStyle = style({
   position: 'sticky',
   left: 0,
   zIndex: 2,
-  width: 'auto',
-  minWidth: '112px',
   backgroundColor: colors.white,
   boxShadow: `4px 0 8px -6px ${colors.gray200}`,
   selectors: {
@@ -775,7 +772,7 @@ export const itemControlButtonStyle = style({
 })
 
 export const addColumnCellStyle = style({
-  width: '1%',
+  width: '40px',
   maxWidth: '40px',
   minWidth: '40px',
   padding: 0,

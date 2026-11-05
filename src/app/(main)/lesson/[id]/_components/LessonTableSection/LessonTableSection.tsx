@@ -25,7 +25,6 @@ import {
   tdStyle,
   thCompactStyle,
   tdCompactStyle,
-  tdShrinkStyle,
   nameCellStyle,
   nameCellRowStyle,
   removeStudentButtonStyle,
@@ -260,7 +259,7 @@ export default function LessonTable({
                     </div>
                   </td>
                   <td
-                    className={getTdClassName(tdCompactStyle, student.id, focusedStudentId, isComplete)}
+                    className={getTdClassName(tdStyle, student.id, focusedStudentId, isComplete)}
                     onMouseDown={() => handleRowFocus(student.id)}
                     onFocusCapture={() => handleRowFocus(student.id)}
                   >
@@ -276,11 +275,7 @@ export default function LessonTable({
                   {dynamicItems.map((item) => {
                     const studentItem = student.items.find((i) => matchesLessonItem(i, item))
                     const tdClass = getTdClassName(
-                      item.item_type === 'SELECT' ||
-                        item.item_type === 'COMPLETE' ||
-                        isScoreItem(item)
-                        ? tdShrinkStyle
-                        : tdStyle,
+                      tdStyle,
                       student.id,
                       focusedStudentId,
                       isComplete,

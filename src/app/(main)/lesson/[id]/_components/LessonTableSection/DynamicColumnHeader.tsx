@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom'
 import type { LessonStudent } from '@/types/lessonStudent'
 import type { LessonItemDetail } from '@/services/lesson'
 import {
-  thShrinkStyle,
+  thStyle,
   scoreColHeaderStyle,
   scoreHeaderMaxRowStyle,
   scoreHeaderMaxLabelStyle,
@@ -152,7 +152,7 @@ export function DynamicColumnHeader({
   )
 
   return (
-    <th className={thShrinkStyle}>
+    <th className={thStyle}>
       {isScore ? (
         <div className={scoreColHeaderStyle}>
           {titleRow}
