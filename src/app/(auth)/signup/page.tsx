@@ -178,11 +178,9 @@ function SignupContent() {
             </Text>
           </Link>
           <div style={{ width: 1, height: 16, backgroundColor: colors.gray300 }} />
-          <Link href="/find-password" className={footerLinkAnchorStyle}>
-            <Text variant="bodyLg" color="gray300">
-              비밀번호 찾기
-            </Text>
-          </Link>
+          <Text variant="bodyLg" color="gray300">
+            비밀번호 찾기
+          </Text>
         </div>
       </div>
       <PendingApprovalModal
