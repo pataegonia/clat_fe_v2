@@ -55,6 +55,7 @@ axiosInstance.interceptors.response.use(
     const isAuthRequest =
       originalRequest.url?.includes('/auth/login') ||
       originalRequest.url?.includes('/auth/signup') ||
+      originalRequest.url?.includes('/auth/password-reset') ||
       originalRequest.url?.includes('/auth/refresh')
 
     // 인증 관련 요청은 인터셉터에서 처리하지 않음

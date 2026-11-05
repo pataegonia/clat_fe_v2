@@ -64,6 +64,12 @@ interface WithdrawRequest {
   password: string
 }
 
+interface ResetPasswordRequest {
+  email: string
+  phone: string
+  new_password: string
+}
+
 const setTokens = (accessToken: string, refreshToken: string) => {
   setCookie('accessToken', accessToken, { maxAge: 60 * 60 * 24 * 7, path: '/' })
   setCookie('refreshToken', refreshToken, { maxAge: 60 * 60 * 24 * 7, path: '/' })
@@ -124,6 +130,10 @@ export const auth = {
 
   async changePassword(payload: ChangePasswordRequest) {
     await axiosInstance.patch('/auth/password', payload)
+  },
+
+  async resetPassword(payload: ResetPasswordRequest) {
+    await axiosInstance.post('/auth/password-reset', payload)
   },
 
   async withdraw(payload: WithdrawRequest) {
