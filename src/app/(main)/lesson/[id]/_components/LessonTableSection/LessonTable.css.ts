@@ -53,6 +53,17 @@ const baseTdStyles = {
 
 // 湲곕낯 (硫붾え)
 export const thStyle = style({ ...baseThStyles, paddingRight: '16px' })
+
+/** 개별 항목 헤더. 고정 높이·nowrap이면 만점·내용 입력이 옆 열로 넘친다. */
+export const dynamicColThStyle = style({
+  ...baseThStyles,
+  paddingRight: '16px',
+  height: 'auto',
+  minHeight: '40px',
+  whiteSpace: 'normal',
+  verticalAlign: 'top',
+  overflow: 'hidden',
+})
 export const tdStyle = style({ ...baseTdStyles, paddingRight: '16px' })
 
 // ?숈깮, 異쒓껐: 肄섑뀗痢??덈퉬 + paddingRight 36
@@ -464,33 +475,43 @@ export const emptyStateIconStyle = style({
   color: colors.gray300,
 })
 
-/** SCORE column header: title + max score row */
+/** SCORE / COMPLETE column header: title + inputs stay inside the column */
 export const scoreColHeaderStyle = style({
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'flex-start',
+  alignItems: 'stretch',
   gap: '4px',
   paddingTop: '4px',
   paddingBottom: '4px',
   whiteSpace: 'normal',
-  minWidth: '200px',
+  width: '100%',
+  maxWidth: '100%',
+  minWidth: 0,
+  boxSizing: 'border-box',
 })
 
-/** COMPLETE column header: title + shared note row */
-export const completeColHeaderStyle = style([
-  scoreColHeaderStyle,
-  {
-    minWidth: '280px',
-  },
-])
+/** COMPLETE column header: same containment as score */
+export const completeColHeaderStyle = scoreColHeaderStyle
 
 export const scoreHeaderMaxRowStyle = style({
   display: 'flex',
   alignItems: 'center',
   gap: '6px',
   marginTop: '2px',
-  flexWrap: 'nowrap',
-  whiteSpace: 'nowrap',
+  flexWrap: 'wrap',
+  width: '100%',
+  maxWidth: '100%',
+  minWidth: 0,
+  whiteSpace: 'normal',
+})
+
+export const scoreHeaderFieldGroupStyle = style({
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '6px',
+  maxWidth: '100%',
+  minWidth: 0,
+  flexShrink: 0,
 })
 
 export const scoreHeaderMaxLabelStyle = style({
@@ -504,13 +525,6 @@ export const scoreHeaderMaxSuffixStyle = style({
   fontSize: fontStyles.labelSm.fontSize,
   fontWeight: fontStyles.labelSm.fontWeight,
   color: colors.gray500,
-  flexShrink: 0,
-})
-
-export const scoreHeaderAvgDividerStyle = style({
-  fontSize: fontStyles.labelSm.fontSize,
-  fontWeight: fontStyles.labelSm.fontWeight,
-  color: colors.gray300,
   flexShrink: 0,
 })
 
@@ -625,9 +639,10 @@ export const scoreInputNarrowStyle = style([
 export const scoreInputMaxStyle = style([
   scoreInputStyle,
   {
-    minWidth: '52px',
+    flex: '1 1 52px',
+    minWidth: 0,
     width: '52px',
-    flexShrink: 0,
+    maxWidth: '72px',
     backgroundColor: colors.white,
     border: `1px solid ${colors.gray200}`,
     selectors: {
@@ -646,9 +661,10 @@ export const scoreInputMaxStyle = style([
 export const completeHeaderNoteInputStyle = style([
   scoreInputStyle,
   {
-    minWidth: '200px',
-    width: '240px',
-    flexShrink: 0,
+    flex: '1 1 120px',
+    width: 'auto',
+    minWidth: 0,
+    maxWidth: '100%',
     padding: '0 8px',
     backgroundColor: colors.white,
     border: `1px solid ${colors.gray200}`,
@@ -669,16 +685,28 @@ export const colHeaderWrapStyle = style({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
+  flexWrap: 'wrap',
   gap: '8px',
   width: '100%',
+  maxWidth: '100%',
+  minWidth: 0,
 })
 
 export const colHeaderTitleBlockStyle = style({
   display: 'flex',
   flexDirection: 'row',
+  flexWrap: 'wrap',
   alignItems: 'center',
   gap: '6px',
   minWidth: 0,
+  maxWidth: '100%',
+})
+
+export const colHeaderNameStyle = style({
+  minWidth: 0,
+  maxWidth: '100%',
+  whiteSpace: 'normal',
+  overflowWrap: 'anywhere',
 })
 
 export const partialTooltipStyle = style({

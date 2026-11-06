@@ -5,18 +5,19 @@ import { createPortal } from 'react-dom'
 import type { LessonStudent } from '@/types/lessonStudent'
 import type { LessonItemDetail } from '@/services/lesson'
 import {
-  thStyle,
+  dynamicColThStyle,
   scoreColHeaderStyle,
   scoreHeaderMaxRowStyle,
+  scoreHeaderFieldGroupStyle,
   scoreHeaderMaxLabelStyle,
   scoreHeaderMaxSuffixStyle,
-  scoreHeaderAvgDividerStyle,
   scoreHeaderAvgValueStyle,
   scoreInputMaxStyle,
   completeColHeaderStyle,
   completeHeaderNoteInputStyle,
   colHeaderWrapStyle,
   colHeaderTitleBlockStyle,
+  colHeaderNameStyle,
   itemControlButtonStyle,
   partialChipRecipe,
   partialTooltipStyle,
@@ -24,8 +25,9 @@ import {
 import {
   applyScoreMaxToAllStudents,
   applyCompleteNoteToAllStudents,
-  formatScoreColumnAverage,
+  formatScoreColumnMetric,
   getScoreColumnAverage,
+  getScoreColumnHighest,
   getScoreColumnMax,
   getCompleteColumnNote,
   isScoreItem,
@@ -133,7 +135,7 @@ export function DynamicColumnHeader({
   const titleRow = (
     <div className={colHeaderWrapStyle}>
       <div className={colHeaderTitleBlockStyle}>
-        <span>{item.name}</span>
+        <span className={colHeaderNameStyle}>{item.name}</span>
         {showPartial && onTogglePartial ? (
           <PartialInputChip item={item} isPartial={isPartial} onToggle={onTogglePartial} />
         ) : null}
@@ -152,33 +154,40 @@ export function DynamicColumnHeader({
   )
 
   return (
-    <th className={thStyle}>
+    <th className={dynamicColThStyle}>
       {isScore ? (
         <div className={scoreColHeaderStyle}>
           {titleRow}
           <div className={scoreHeaderMaxRowStyle}>
-            <span className={scoreHeaderMaxLabelStyle}>만점</span>
-            <input
-              className={scoreInputMaxStyle}
-              type="text"
-              inputMode="decimal"
-              autoComplete="off"
-              value={getScoreColumnMax(students, item)}
-              onChange={(ev) =>
-                onChange(applyScoreMaxToAllStudents(students, item, ev.target.value))
-              }
-              placeholder="100"
-              aria-label="이 항목 만점"
-            />
-            <span className={scoreHeaderMaxSuffixStyle} aria-hidden>
-              점
+            <span className={scoreHeaderFieldGroupStyle}>
+              <span className={scoreHeaderMaxLabelStyle}>만점</span>
+              <input
+                className={scoreInputMaxStyle}
+                type="text"
+                inputMode="decimal"
+                autoComplete="off"
+                value={getScoreColumnMax(students, item)}
+                onChange={(ev) =>
+                  onChange(applyScoreMaxToAllStudents(students, item, ev.target.value))
+                }
+                placeholder="100"
+                aria-label="이 항목 만점"
+              />
+              <span className={scoreHeaderMaxSuffixStyle} aria-hidden>
+                점
+              </span>
             </span>
-            <span className={scoreHeaderAvgDividerStyle} aria-hidden>
-              ·
+            <span className={scoreHeaderFieldGroupStyle}>
+              <span className={scoreHeaderMaxLabelStyle}>평균</span>
+              <span className={scoreHeaderAvgValueStyle}>
+                {formatScoreColumnMetric(getScoreColumnAverage(students, item))}
+              </span>
             </span>
-            <span className={scoreHeaderMaxLabelStyle}>평균</span>
-            <span className={scoreHeaderAvgValueStyle}>
-              {formatScoreColumnAverage(getScoreColumnAverage(students, item))}
+            <span className={scoreHeaderFieldGroupStyle}>
+              <span className={scoreHeaderMaxLabelStyle}>최고점</span>
+              <span className={scoreHeaderAvgValueStyle}>
+                {formatScoreColumnMetric(getScoreColumnHighest(students, item))}
+              </span>
             </span>
           </div>
         </div>

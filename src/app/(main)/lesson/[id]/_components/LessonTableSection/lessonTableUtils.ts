@@ -54,25 +54,40 @@ export function getScoreColumnMax(students: LessonStudent[], item: LessonItemDet
   return ''
 }
 
-/** 입력된 획득 점수만으로 평균. 문자 발송과 동일하게 소수 첫째 자리. */
-export function getScoreColumnAverage(
-  students: LessonStudent[],
-  item: LessonItemDetail,
-): number | null {
+function collectScoreMetrics(students: LessonStudent[], item: LessonItemDetail): number[] {
   const nums: number[] = []
   for (const s of students) {
     const v = s.items.find((i) => matchesLessonItem(i, item))?.value ?? ''
     const metric = cohortScoreMetric(v)
     if (metric != null) nums.push(metric)
   }
+  return nums
+}
+
+/** 입력된 획득 점수만으로 평균. 문자 발송과 동일하게 소수 첫째 자리. */
+export function getScoreColumnAverage(
+  students: LessonStudent[],
+  item: LessonItemDetail,
+): number | null {
+  const nums = collectScoreMetrics(students, item)
   if (nums.length === 0) return null
   const sum = nums.reduce((a, b) => a + b, 0)
   return Math.round((sum / nums.length) * 10) / 10
 }
 
-export function formatScoreColumnAverage(avg: number | null): string {
-  if (avg == null) return '—'
-  return Number.isInteger(avg) ? `${avg}점` : `${avg.toFixed(1)}점`
+/** 입력된 획득 점수 중 최고. 문자 발송의 반 최고와 동일하게 소수 첫째 자리. */
+export function getScoreColumnHighest(
+  students: LessonStudent[],
+  item: LessonItemDetail,
+): number | null {
+  const nums = collectScoreMetrics(students, item)
+  if (nums.length === 0) return null
+  return Math.round(Math.max(...nums) * 10) / 10
+}
+
+export function formatScoreColumnMetric(value: number | null): string {
+  if (value == null) return '—'
+  return Number.isInteger(value) ? `${value}점` : `${value.toFixed(1)}점`
 }
 
 export function applyScoreMaxToAllStudents(
