@@ -27,7 +27,6 @@ import {
   applyCompleteNoteToAllStudents,
   formatScoreColumnMetric,
   getScoreColumnAverage,
-  getScoreColumnHighest,
   getScoreColumnMax,
   getCompleteColumnNote,
   isScoreItem,
@@ -181,12 +180,6 @@ export function DynamicColumnHeader({
               <span className={scoreHeaderMaxLabelStyle}>평균</span>
               <span className={scoreHeaderAvgValueStyle}>
                 {formatScoreColumnMetric(getScoreColumnAverage(students, item))}
-              </span>
-            </span>
-            <span className={scoreHeaderFieldGroupStyle}>
-              <span className={scoreHeaderMaxLabelStyle}>최고점</span>
-              <span className={scoreHeaderAvgValueStyle}>
-                {formatScoreColumnMetric(getScoreColumnHighest(students, item))}
               </span>
             </span>
           </div>

@@ -75,16 +75,6 @@ export function getScoreColumnAverage(
   return Math.round((sum / nums.length) * 10) / 10
 }
 
-/** 입력된 획득 점수 중 최고. 문자 발송의 반 최고와 동일하게 소수 첫째 자리. */
-export function getScoreColumnHighest(
-  students: LessonStudent[],
-  item: LessonItemDetail,
-): number | null {
-  const nums = collectScoreMetrics(students, item)
-  if (nums.length === 0) return null
-  return Math.round(Math.max(...nums) * 10) / 10
-}
-
 export function formatScoreColumnMetric(value: number | null): string {
   if (value == null) return '—'
   return Number.isInteger(value) ? `${value}점` : `${value.toFixed(1)}점`
