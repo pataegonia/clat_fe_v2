@@ -1,4 +1,20 @@
 import publicAxios from '@/lib/api/publicAxios'
+import type { ReportKind, ReportSnapshot, ReportSummary } from '@/services/reports'
+
+export type ParentReportListItem = {
+  id: number
+  period_type: ReportKind
+  period_start: string
+  period_end: string
+  label: string
+}
+
+export type ParentReportDetail = ParentReportListItem & {
+  student_name: string
+  snapshot: ReportSnapshot
+  /** 월간: 선생님이 승인한 총평. 주간은 null */
+  summary: ReportSummary | null
+}
 
 type ParentLessonSummary = {
   attendance: string | null
@@ -77,6 +93,16 @@ export const parentDashboardService = {
   async listNotices(token: string): Promise<{ notices: ParentNoticeItem[] }> {
     const { data } = await publicAxios.get(`/parent/${encodeURIComponent(token)}/notices`)
     return unwrapData<{ notices: ParentNoticeItem[] }>(data)
+  },
+
+  async listReports(token: string): Promise<{ reports: ParentReportListItem[] }> {
+    const { data } = await publicAxios.get(`/parent/${encodeURIComponent(token)}/reports`)
+    return unwrapData<{ reports: ParentReportListItem[] }>(data)
+  },
+
+  async getReport(token: string, reportId: number): Promise<ParentReportDetail> {
+    const { data } = await publicAxios.get(`/parent/${encodeURIComponent(token)}/reports/${reportId}`)
+    return unwrapData<ParentReportDetail>(data)
   },
 }
 

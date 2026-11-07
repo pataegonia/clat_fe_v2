@@ -9,6 +9,7 @@ export type PhoneNavTabId = (typeof PHONE_NAV_TABS)[number]['id'] | 'more'
 export const MORE_LINKS = [
   { href: '/template', label: '수업 템플릿' },
   { href: '/alimtalk', label: '알림톡' },
+  { href: '/reports', label: '보고서' },
   { href: '/ai', label: 'AI 조교' },
   { href: '/me', label: '내 정보' },
 ] as const
@@ -41,6 +42,7 @@ export function getMobileTitle(pathname: string): string {
   if (pathname.startsWith('/students')) return '학생 대시보드'
   if (pathname.startsWith('/template')) return '수업 템플릿'
   if (pathname.startsWith('/alimtalk')) return '알림톡'
+  if (pathname.startsWith('/reports')) return '보고서'
   if (pathname.startsWith('/ai')) return 'AI 조교'
   if (pathname.startsWith('/me')) return '내 정보'
   return '홈'

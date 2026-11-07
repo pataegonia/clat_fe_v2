@@ -9,8 +9,11 @@ import {
   type ParentDashboardData,
   type ParentLessonListItem,
   type ParentNoticeItem,
+  type ParentReportDetail,
+  type ParentReportListItem,
 } from '@/services/parentDashboard'
 import ParentDashboardView from '../_components/ParentDashboardView'
+import { ReportNumbers, ReportSummaryView } from '@/components/report/ReportView'
 import { useTutorial } from '@/features/tutorial/TutorialProvider'
 import * as styles from './parentDashboard.css'
 
@@ -53,7 +56,7 @@ function tutorialNotices(lessonDate: string): ParentNoticeItem[] {
   ]
 }
 
-type Tab = 'lesson' | 'timeline' | 'notices'
+type Tab = 'lesson' | 'timeline' | 'notices' | 'reports'
 
 function formatDay(value: string) {
   const parsed = parseISO(value.slice(0, 10))
@@ -71,6 +74,8 @@ function ParentDashboardPage({ params }: { params: Promise<{ token: string }> })
   const [data, setData] = useState<ParentDashboardData | null>(null)
   const [lessons, setLessons] = useState<ParentLessonListItem[]>([])
   const [notices, setNotices] = useState<ParentNoticeItem[]>([])
+  const [reports, setReports] = useState<ParentReportListItem[]>([])
+  const [report, setReport] = useState<ParentReportDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const tour = useTutorial()
@@ -152,6 +157,30 @@ function ParentDashboardPage({ params }: { params: Promise<{ token: string }> })
     }
   }, [tab, token])
 
+  useEffect(() => {
+    if (tab !== 'reports') return
+    let cancelled = false
+    setReport(null)
+    parentDashboardService
+      .listReports(token)
+      .then((res) => {
+        if (!cancelled) setReports(res.reports)
+      })
+      .catch(() => {
+        if (!cancelled) setReports([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [tab, token])
+
+  const openReport = (reportId: number) => {
+    parentDashboardService
+      .getReport(token, reportId)
+      .then(setReport)
+      .catch(() => setReport(null))
+  }
+
   const chrome = (
     <div className={styles.chrome}>
       <div className={styles.tabRow}>
@@ -160,15 +189,14 @@ function ParentDashboardPage({ params }: { params: Promise<{ token: string }> })
             ['lesson', '이번 수업'],
             ['timeline', '지난 수업'],
             ['notices', '공지'],
+            ['reports', '보고서'],
           ] as const
         ).map(([id, label]) => (
           <button
             key={id}
             type="button"
             className={tab === id ? `${styles.tabButton} ${styles.tabButtonOn}` : styles.tabButton}
-            data-tour={
-              id === 'lesson' ? 'parent-tab-lesson' : id === 'timeline' ? 'parent-tab-timeline' : 'parent-tab-notices'
-            }
+            data-tour={`parent-tab-${id}`}
             onClick={() => setTab(id)}
           >
             {label}
@@ -238,6 +266,33 @@ function ParentDashboardPage({ params }: { params: Promise<{ token: string }> })
                 </div>
               ))}
               {displayNotices.length === 0 ? <div className={styles.stateBox}>받은 공지가 없어요.</div> : null}
+            </div>
+          ) : null}
+          {tab === 'reports' && report ? (
+            <div className={styles.listCard}>
+              <button type="button" className={styles.tabButton} onClick={() => setReport(null)}>
+                ← 보고서 목록
+              </button>
+              <div className={styles.listTitle}>{`${report.student_name} 학생 ${report.label} 보고서`}</div>
+              <div className={styles.listMeta}>{`${formatDay(report.period_start)} ~ ${formatDay(report.period_end)}`}</div>
+              <ReportNumbers snapshot={report.snapshot} />
+              {report.summary ? (
+                <>
+                  <div className={styles.listTitle}>선생님 총평</div>
+                  <ReportSummaryView summary={report.summary} />
+                </>
+              ) : null}
+            </div>
+          ) : null}
+          {tab === 'reports' && !report ? (
+            <div>
+              {reports.map((item) => (
+                <button key={item.id} type="button" className={styles.listCard} onClick={() => openReport(item.id)}>
+                  <div className={styles.listTitle}>{`${item.label} 보고서`}</div>
+                  <div className={styles.listMeta}>{`${formatDay(item.period_start)} ~ ${formatDay(item.period_end)}`}</div>
+                </button>
+              ))}
+              {reports.length === 0 ? <div className={styles.stateBox}>아직 받은 보고서가 없어요.</div> : null}
             </div>
           ) : null}
         </div>
