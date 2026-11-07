@@ -1,11 +1,21 @@
 'use client'
 
 import Link from 'next/link'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Text from '@/components/common/Text'
+import Button from '@/components/common/Button'
 import { queryKeys } from '@/lib/queryKeys'
-import { briefingService, type BriefingLessonRef, type TodayBriefing as Briefing } from '@/services/briefing'
+import {
+  briefingService,
+  type BriefingAiSummary,
+  type BriefingLessonRef,
+  type TodayBriefing as Briefing,
+} from '@/services/briefing'
 import * as styles from './TodayBriefing.css'
+
+const BRIEFING_POLL_MS = 60_000
+/** AI 요약을 만드는 동안 더 자주 확인한다. */
+const SUMMARY_POLL_MS = 4_000
 
 /** 'YYYY-MM-DD' → 'M/D' */
 function shortDate(date: string) {
@@ -79,6 +89,56 @@ function todoLines(todos: Briefing['todos']): TodoLine[] {
   return lines
 }
 
+/** 학생 메모·지난 수업 기록 AI 요약. 선생님만 보는 보조 정보라 틀릴 수 있다고 함께 적는다. */
+function AiSummary({ summary }: { summary: BriefingAiSummary }) {
+  const queryClient = useQueryClient()
+  const retry = useMutation({
+    mutationFn: () => briefingService.retrySummary(),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: queryKeys.briefing.today }),
+  })
+  const lines = summary.status === 'FAILED' ? null : summary.lines
+  return (
+    <div className={styles.section}>
+      <div className={styles.summaryHeader}>
+        <Text variant="titleSm" color="gray700" as="h3">
+          AI 요약
+        </Text>
+        <Text variant="labelSm" color="gray500">
+          학생 메모와 지난 수업 기록을 AI가 줄였어요. 틀릴 수 있어요.
+        </Text>
+      </div>
+      {lines ? (
+        <ul className={styles.list}>
+          {lines.map((line, index) => (
+            <li key={`${index}-${line}`}>
+              <Text variant="bodyMd">{line}</Text>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      {summary.status === 'PENDING' ? (
+        <Text variant="bodyMd" color="gray500">
+          {lines ? '기록이 바뀌어 다시 요약하는 중이에요…' : '요약하는 중이에요…'}
+        </Text>
+      ) : null}
+      {summary.status === 'FAILED' ? (
+        <div className={styles.summaryFailed}>
+          <Text variant="bodyMd" color="gray500">
+            {summary.fail_reason === 'LIMITED'
+              ? '오늘 AI 사용 한도를 다 써서 요약하지 못했어요.'
+              : '요약을 만들지 못했어요.'}
+          </Text>
+          {summary.fail_reason === 'LIMITED' ? null : (
+            <Button variant="ghost" size="sm" disabled={retry.isPending} onClick={() => retry.mutate()}>
+              다시 요약
+            </Button>
+          )}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
 /**
  * 수업 입력 화면의 오늘 브리핑 (ref/ai-features-plan.md 6장). 오늘 날짜를 골랐을 때만 보인다.
  * date는 화면에서 고른 날짜(YYYY-MM-DD). 서버의 오늘(한국 날짜)과 다르면(자정을 넘긴 창 등) 숨긴다.
@@ -88,7 +148,8 @@ export default function TodayBriefing({ date }: { date: string }) {
     queryKey: queryKeys.briefing.today,
     queryFn: () => briefingService.getToday(),
     refetchOnMount: 'always',
-    refetchInterval: 60_000,
+    refetchInterval: (query) =>
+      query.state.data?.ai_summary?.status === 'PENDING' ? SUMMARY_POLL_MS : BRIEFING_POLL_MS,
   })
   // 브리핑은 보조 정보라 실패하면 조용히 숨긴다.
   if (isError || !data || data.date !== date) return null
@@ -98,13 +159,15 @@ export default function TodayBriefing({ date }: { date: string }) {
   const continueClasses = data.classes.filter(
     (cls) => (cls.previous_lesson?.common_items.length ?? 0) > 0,
   )
-  const empty = lines.length === 0 && studentClasses.length === 0 && continueClasses.length === 0
+  const empty =
+    lines.length === 0 && studentClasses.length === 0 && continueClasses.length === 0 && !data.ai_summary
 
   return (
     <section className={styles.card} aria-label="오늘 브리핑">
       <Text variant="headingSm" as="h2">
         오늘 브리핑
       </Text>
+      {data.ai_summary ? <AiSummary summary={data.ai_summary} /> : null}
       {empty ? (
         <Text variant="bodyMd" color="gray500">
           오늘 챙길 일이 없어요.

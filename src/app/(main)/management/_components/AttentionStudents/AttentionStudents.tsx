@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { format, parseISO } from 'date-fns'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Text from '@/components/common/Text'
 import Chip from '@/components/common/Chip'
@@ -9,11 +10,15 @@ import Button from '@/components/common/Button'
 import { useToastStore } from '@/stores/toastStore'
 import {
   riskSignalService,
+  type CommentAnalysisState,
   type RiskCategory,
   type RiskDecision,
   type RiskSignal,
 } from '@/services/riskSignals'
 import * as styles from './AttentionStudents.css'
+
+/** AI가 수업 기록을 읽는 동안 목록을 다시 불러오는 간격 */
+const ANALYSIS_POLL_MS = 5_000
 
 const CATEGORY_LABEL: Record<RiskCategory, string> = {
   LEARNING: '학습',
@@ -23,6 +28,25 @@ const CATEGORY_LABEL: Record<RiskCategory, string> = {
 const DECISION_LABEL: Record<RiskDecision, string> = {
   ACKNOWLEDGED: '확인함',
   NOT_APPLICABLE: '해당 없음',
+}
+
+/** AI가 수업 기록·메모를 읽는 중이거나, 나중에 이어서 읽거나, 읽지 못한 글이 있을 때만 알린다. */
+function analysisNotices(state: CommentAnalysisState): string[] {
+  const notices: string[] = []
+  if (state.status === 'RUNNING') {
+    notices.push(`AI가 수업 기록·메모 ${state.remaining}건을 읽고 있어요. 다 읽으면 목록에 더해져요.`)
+  }
+  if (state.status === 'WAITING' && state.resume_at) {
+    notices.push(
+      `수업 기록·메모 ${state.remaining}건은 ${format(parseISO(state.resume_at), 'M/d HH:mm')}에 이어서 읽어요.`,
+    )
+  }
+  if (state.failed > 0) {
+    notices.push(
+      `수업 기록·메모 ${state.failed}건은 AI가 읽지 못해 목록에서 빠져 있어요. 몇 시간 뒤 다시 읽어요.`,
+    )
+  }
+  return notices
 }
 
 /**
@@ -37,7 +61,11 @@ export default function AttentionStudents() {
   const { data, isLoading, isError } = useQuery({
     queryKey,
     queryFn: () => riskSignalService.list(includeReviewed),
+    refetchInterval: (query) =>
+      query.state.data?.comment_analysis?.status === 'RUNNING' ? ANALYSIS_POLL_MS : false,
   })
+  const notices = data ? analysisNotices(data.comment_analysis) : []
+  const aiOn = data != null && data.comment_analysis.status !== 'OFF'
   const review = useMutation({
     mutationFn: (input: { studentId: number; signal: RiskSignal; decision: RiskDecision }) =>
       riskSignalService.review({
@@ -65,6 +93,7 @@ export default function AttentionStudents() {
         <Text variant="bodyMd" color="gray500">
           최근 60일 수업 기록에서 살펴보면 좋을 학생이에요. 이유와 날짜를 보고 &apos;확인함&apos; 또는
           &apos;해당 없음&apos;을 눌러 주세요. 학부모에게는 보이지 않아요.
+          {aiOn ? " 'AI 분석'은 AI가 수업 기록과 메모를 읽고 찾은 것이라 틀릴 수 있어요." : null}
         </Text>
         <label className={styles.toggle}>
           <input
@@ -78,6 +107,11 @@ export default function AttentionStudents() {
         </label>
       </div>
 
+      {notices.map((notice) => (
+        <Text key={notice} variant="bodyMd" color="gray700">
+          {notice}
+        </Text>
+      ))}
       {isLoading ? (
         <Text variant="bodyMd" color="gray500">
           불러오는 중…
@@ -106,7 +140,7 @@ export default function AttentionStudents() {
                   <div className={styles.signalText}>
                     <Chip
                       variant={signal.category === 'LEARNING' ? 'active' : 'inProgress'}
-                      label={CATEGORY_LABEL[signal.category]}
+                      label={signal.source === 'AI' ? 'AI 분석' : CATEGORY_LABEL[signal.category]}
                     />
                     <Text variant="bodyMd">{signal.message}</Text>
                     {signal.class_name ? (

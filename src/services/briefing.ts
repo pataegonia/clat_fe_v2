@@ -28,6 +28,14 @@ export interface BriefingNote {
   dates: string[]
 }
 
+/** 학생 메모·지난 수업 기록 AI 요약. 기록이 바뀌어 다시 만드는 중이면 지난 요약 줄을 함께 준다. */
+export interface BriefingAiSummary {
+  status: 'PENDING' | 'DONE' | 'FAILED'
+  lines: string[] | null
+  /** LIMITED: 하루 AI 사용 한도를 다 써서 만들지 못함 */
+  fail_reason: string | null
+}
+
 export interface TodayBriefing {
   date: string
   todos: {
@@ -60,11 +68,18 @@ export interface TodayBriefing {
     /** 특이사항이 있는 학생만 */
     students: Array<{ student_id: number; name: string; notes: BriefingNote[] }>
   }>
+  /** AI를 쓰지 않거나 요약할 학생이 적으면 null */
+  ai_summary: BriefingAiSummary | null
 }
 
 export const briefingService = {
   async getToday(): Promise<TodayBriefing> {
     const { data } = await axiosInstance.get('/briefing/today')
     return (data.data ?? data) as TodayBriefing
+  },
+
+  /** AI 요약 다시 만들기 */
+  async retrySummary(): Promise<void> {
+    await axiosInstance.post('/briefing/today/summary')
   },
 }

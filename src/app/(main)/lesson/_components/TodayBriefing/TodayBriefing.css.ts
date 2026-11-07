@@ -26,6 +26,21 @@ export const section = style({
   gap: '8px',
 })
 
+export const summaryHeader = style({
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'baseline',
+  columnGap: '8px',
+  rowGap: '2px',
+})
+
+export const summaryFailed = style({
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: '8px',
+})
+
 export const classBlock = style({
   display: 'flex',
   flexDirection: 'column',

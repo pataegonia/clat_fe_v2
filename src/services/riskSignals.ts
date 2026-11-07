@@ -8,6 +8,8 @@ export type RiskDecision = 'ACKNOWLEDGED' | 'NOT_APPLICABLE'
 export interface RiskSignal {
   code: string
   category: RiskCategory
+  /** RULE: 기록 숫자로 계산 / AI: AI가 수업 기록·메모를 읽고 찾음(틀릴 수 있다) */
+  source: 'RULE' | 'AI'
   message: string
   dates: string[]
   evidence_key: string
@@ -16,9 +18,19 @@ export interface RiskSignal {
   review: { decision: RiskDecision; reviewed_at: string } | null
 }
 
+/** AI가 수업 기록·메모를 읽는 진행 상태. WAITING이면 resume_at에 이어서 읽는다. */
+export interface CommentAnalysisState {
+  status: 'OFF' | 'DONE' | 'RUNNING' | 'WAITING'
+  remaining: number
+  /** AI가 읽지 못해 목록에서 빠진 글 수. 시간이 지나면 다시 읽는다. */
+  failed: number
+  resume_at: string | null
+}
+
 export interface RiskSignalList {
   period: { from: string; to: string }
   students: Array<{ student_id: number; name: string; signals: RiskSignal[] }>
+  comment_analysis: CommentAnalysisState
 }
 
 export const riskSignalService = {
