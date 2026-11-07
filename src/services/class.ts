@@ -1,5 +1,6 @@
 import axiosInstance from '@/lib/api/axiosInstance'
 import type { Student } from '@/types/student'
+import { leaveReasonPayload, type LeaveReasonValue } from '@/types/leaveReason'
 
 export interface ClassSchedule {
   day_of_week: number
@@ -85,8 +86,14 @@ export const classService = {
     await axiosInstance.post(`/classes/${id}/students`, { student_ids })
   },
 
-  // 학생 제거
-  async removeStudent(classId: number, studentId: number): Promise<void> {
-    await axiosInstance.delete(`/classes/${classId}/students/${studentId}`)
+  // 학생 제거 (사유는 선택)
+  async removeStudent(
+    classId: number,
+    studentId: number,
+    leaveReason?: LeaveReasonValue,
+  ): Promise<void> {
+    await axiosInstance.delete(`/classes/${classId}/students/${studentId}`, {
+      params: leaveReasonPayload(leaveReason),
+    })
   },
 }

@@ -33,6 +33,8 @@ import UsersIcon from '@/assets/icons/icon-users.svg'
 import AddStudentFormModal from '@/components/student/AddStudentFormModal/AddStudentFormModal'
 import BulkUploadModal from './_components/BulkUploadModal/BulkUploadModal'
 import ConfirmModal from '@/components/common/ConfirmModal'
+import LeaveReasonPicker from '@/components/student/LeaveReasonPicker/LeaveReasonPicker'
+import { EMPTY_LEAVE_REASON, type LeaveReasonValue } from '@/types/leaveReason'
 import { studentService } from '@/services/student'
 import type { Student } from '@/types/student'
 import { useToastStore } from '@/stores/toastStore'
@@ -88,6 +90,15 @@ function ManagementContent() {
   const bulkUpload = useDisclosure()
   const [deleteStudentTarget, setDeleteStudentTarget] = useState<number | null>(null)
   const [bulkDeletePending, setBulkDeletePending] = useState(false)
+  const [leaveReason, setLeaveReason] = useState<LeaveReasonValue>(EMPTY_LEAVE_REASON)
+  const closeDeleteStudent = () => {
+    setDeleteStudentTarget(null)
+    setLeaveReason(EMPTY_LEAVE_REASON)
+  }
+  const closeBulkDelete = () => {
+    setBulkDeletePending(false)
+    setLeaveReason(EMPTY_LEAVE_REASON)
+  }
   const [isStudentSelectionMode, setIsStudentSelectionMode] = useState(false)
   const {
     items: selectedStudentIds,
@@ -115,7 +126,7 @@ function ManagementContent() {
   const handleDeleteStudent = async () => {
     if (!deleteStudentTarget) return
     try {
-      await studentService.deleteStudent(deleteStudentTarget)
+      await studentService.deleteStudent(deleteStudentTarget, leaveReason)
       setStudents((prev) => prev.filter((s) => s.id !== deleteStudentTarget))
       setSelectedStudentIds((prev) => prev.filter((id) => id !== deleteStudentTarget))
       addToast({ variant: 'success', message: '학생이 삭제됐어요.' })
@@ -123,7 +134,7 @@ function ManagementContent() {
       console.error('학생 삭제 실패', err)
       addToast({ variant: 'error', message: '학생 삭제에 실패했어요.' })
     } finally {
-      setDeleteStudentTarget(null)
+      closeDeleteStudent()
     }
   }
 
@@ -138,7 +149,7 @@ function ManagementContent() {
   const handleBulkDeleteStudents = async () => {
     if (selectedStudentIds.length === 0) return
     try {
-      const result = await studentService.bulkDeleteStudents(selectedStudentIds)
+      const result = await studentService.bulkDeleteStudents(selectedStudentIds, leaveReason)
       const deletedIds = new Set(selectedStudentIds)
       setStudents((prev) => prev.filter((s) => !deletedIds.has(s.id)))
       exitStudentSelectionMode()
@@ -150,7 +161,7 @@ function ManagementContent() {
       console.error('학생 선택 삭제 실패', err)
       addToast({ variant: 'error', message: '학생 삭제에 실패했어요.' })
     } finally {
-      setBulkDeletePending(false)
+      closeBulkDelete()
     }
   }
 
@@ -341,23 +352,27 @@ function ManagementContent() {
 
           <ConfirmModal
             isOpen={!!deleteStudentTarget}
-            onClose={() => setDeleteStudentTarget(null)}
+            onClose={closeDeleteStudent}
             onConfirm={handleDeleteStudent}
             title={`'${students.find((s) => s.id === deleteStudentTarget)?.name}' 학생을 삭제할까요?`}
             descriptions={['삭제 후에는 복구할 수 없어요.']}
             confirmLabel="삭제"
             confirmVariant="danger"
-          />
+          >
+            <LeaveReasonPicker value={leaveReason} onChange={setLeaveReason} label="삭제 사유" />
+          </ConfirmModal>
 
           <ConfirmModal
             isOpen={bulkDeletePending}
-            onClose={() => setBulkDeletePending(false)}
+            onClose={closeBulkDelete}
             onConfirm={handleBulkDeleteStudents}
             title={`선택한 ${selectedStudentIds.length}명의 학생을 삭제할까요?`}
             descriptions={['삭제 후에는 복구할 수 없어요.']}
             confirmLabel="삭제"
             confirmVariant="danger"
-          />
+          >
+            <LeaveReasonPicker value={leaveReason} onChange={setLeaveReason} label="삭제 사유" />
+          </ConfirmModal>
 
         </>
       )}

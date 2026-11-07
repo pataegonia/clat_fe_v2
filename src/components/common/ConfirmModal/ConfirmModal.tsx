@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import Text from '@/components/common/Text'
 import Button from '@/components/common/Button'
 import Modal from '@/components/common/Modal'
@@ -9,6 +10,8 @@ interface ConfirmModalProps {
   onConfirm: () => void
   title: string
   descriptions?: string[]
+  /** 설명 아래, 버튼 위에 넣을 추가 입력 (예: 사유 선택) */
+  children?: ReactNode
   confirmLabel?: string
   cancelLabel?: string
   confirmVariant?: 'primary' | 'danger' | 'deleteClass' | 'endClass'
@@ -22,6 +25,7 @@ export default function ConfirmModal({
   onConfirm,
   title,
   descriptions,
+  children,
   confirmLabel = '확인',
   cancelLabel = '취소',
   confirmVariant = 'primary',
@@ -40,6 +44,7 @@ export default function ConfirmModal({
               {desc}
             </Text>
           ))}
+        {children}
       </div>
       <div className={actionsStyle}>
         <Button variant="ghost" size="md" fullWidth onClick={onClose}>

@@ -15,6 +15,8 @@ import EditIcon from '@/assets/icons/icon-edit.svg'
 import PlusIcon from '@/assets/icons/icon-plus.svg'
 import EnrollStudentsModal from '@/components/student/EnrollStudentsModal/EnrollStudentsModal'
 import ConfirmModal from '@/components/common/ConfirmModal'
+import LeaveReasonPicker from '@/components/student/LeaveReasonPicker/LeaveReasonPicker'
+import { EMPTY_LEAVE_REASON, type LeaveReasonValue } from '@/types/leaveReason'
 import ClassFormModal from '../_components/ClassFormModal/ClassFormModal'
 import { classService, type ClassDetail } from '@/services/class'
 import { useToastStore } from '@/stores/toastStore'
@@ -40,6 +42,11 @@ export default function ClassDetailPage({ params }: { params: Promise<{ id: stri
   const [students, setStudents] = useState<Student[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [deleteStudentTarget, setDeleteStudentTarget] = useState<number | null>(null)
+  const [leaveReason, setLeaveReason] = useState<LeaveReasonValue>(EMPTY_LEAVE_REASON)
+  const closeRemoveStudent = () => {
+    setDeleteStudentTarget(null)
+    setLeaveReason(EMPTY_LEAVE_REASON)
+  }
   useEffect(() => {
     classService
       .getClass(classId)
@@ -57,13 +64,13 @@ export default function ClassDetailPage({ params }: { params: Promise<{ id: stri
   const handleDeleteStudent = async () => {
     if (!deleteStudentTarget) return
     try {
-      await classService.removeStudent(classId, deleteStudentTarget)
+      await classService.removeStudent(classId, deleteStudentTarget, leaveReason)
       setStudents((prev) => prev.filter((s) => s.id !== deleteStudentTarget))
       addToast({ variant: 'success', message: '학생이 제거됐어요.' })
     } catch {
       addToast({ variant: 'error', message: '학생 제거에 실패했어요.' })
     } finally {
-      setDeleteStudentTarget(null)
+      closeRemoveStudent()
     }
   }
 
@@ -211,13 +218,15 @@ export default function ClassDetailPage({ params }: { params: Promise<{ id: stri
 
         <ConfirmModal
           isOpen={!!deleteStudentTarget}
-          onClose={() => setDeleteStudentTarget(null)}
+          onClose={closeRemoveStudent}
           onConfirm={handleDeleteStudent}
           title={`'${students.find((s) => s.id === deleteStudentTarget)?.name}' 학생을 ${classDetail.name}에서 제거할까요?`}
           descriptions={['반에서 제거되지만 학생 정보는 그대로 남아요.']}
           confirmLabel="제거"
           confirmVariant="danger"
-        />
+        >
+          <LeaveReasonPicker value={leaveReason} onChange={setLeaveReason} label="반에서 빼는 사유" />
+        </ConfirmModal>
 
         <ConfirmModal
           isOpen={endClass.isOpen}

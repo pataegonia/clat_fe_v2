@@ -1,5 +1,6 @@
 import axiosInstance from '@/lib/api/axiosInstance'
 import type { Student, StudentDetail } from '@/types/student'
+import { leaveReasonPayload, type LeaveReasonValue } from '@/types/leaveReason'
 
 export type { StudentClass } from '@/types/student'
 
@@ -68,12 +69,18 @@ export const studentService = {
     return data.data
   },
 
-  async deleteStudent(id: number): Promise<void> {
-    await axiosInstance.delete(`/students/${id}`)
+  async deleteStudent(id: number, leaveReason?: LeaveReasonValue): Promise<void> {
+    await axiosInstance.delete(`/students/${id}`, { params: leaveReasonPayload(leaveReason) })
   },
 
-  async bulkDeleteStudents(ids: number[]): Promise<{ deleted_count: number }> {
-    const { data } = await axiosInstance.post('/students/bulk-delete', { ids })
+  async bulkDeleteStudents(
+    ids: number[],
+    leaveReason?: LeaveReasonValue,
+  ): Promise<{ deleted_count: number }> {
+    const { data } = await axiosInstance.post('/students/bulk-delete', {
+      ids,
+      ...leaveReasonPayload(leaveReason),
+    })
     return data.data as { deleted_count: number }
   },
 
