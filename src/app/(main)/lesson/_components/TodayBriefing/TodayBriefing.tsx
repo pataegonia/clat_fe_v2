@@ -16,12 +16,13 @@ function shortDate(date: string) {
 type TodoLine = {
   key: string
   label: string
-  links: Array<{ href: string; text: string }>
+  links: Array<{ key: string; href: string; text: string }>
   more: number
 }
 
 const lessonLinks = (items: BriefingLessonRef[]) =>
   items.map((item) => ({
+    key: `lesson-${item.lesson_id}`,
     href: `/lesson/${item.lesson_id}`,
     text: `${item.class_name} ${shortDate(item.lesson_date)}`,
   }))
@@ -50,6 +51,7 @@ function todoLines(todos: Briefing['todos']): TodoLine[] {
       key: 'failed',
       label: `보내지 못한 문자가 있는 발송 ${failed.total}건`,
       links: failed.items.map((batch) => ({
+        key: `batch-${batch.batch_id}`,
         href: batch.lesson_id ? `/lesson/${batch.lesson_id}` : '/alimtalk',
         text: `${batch.class_name ?? '전체 공지'} (${batch.fail_count}건 실패)`,
       })),
@@ -77,8 +79,11 @@ function todoLines(todos: Briefing['todos']): TodoLine[] {
   return lines
 }
 
-/** 수업 입력 화면의 오늘 브리핑 (ref/ai-features-plan.md 6장). 오늘 날짜를 골랐을 때만 보인다. */
-export default function TodayBriefing() {
+/**
+ * 수업 입력 화면의 오늘 브리핑 (ref/ai-features-plan.md 6장). 오늘 날짜를 골랐을 때만 보인다.
+ * date는 화면에서 고른 날짜(YYYY-MM-DD). 서버의 오늘(한국 날짜)과 다르면(자정을 넘긴 창 등) 숨긴다.
+ */
+export default function TodayBriefing({ date }: { date: string }) {
   const { data, isError } = useQuery({
     queryKey: queryKeys.briefing.today,
     queryFn: () => briefingService.getToday(),
@@ -86,7 +91,7 @@ export default function TodayBriefing() {
     refetchInterval: 60_000,
   })
   // 브리핑은 보조 정보라 실패하면 조용히 숨긴다.
-  if (isError || !data) return null
+  if (isError || !data || data.date !== date) return null
 
   const lines = todoLines(data.todos)
   const studentClasses = data.classes.filter((cls) => cls.students.length > 0)
@@ -117,7 +122,7 @@ export default function TodayBriefing() {
                 <Text variant="bodyMd">{line.label}</Text>
                 <span className={styles.links}>
                   {line.links.map((link) => (
-                    <Link key={`${link.href}-${link.text}`} href={link.href} className={styles.link}>
+                    <Link key={link.key} href={link.href} className={styles.link}>
                       {link.text}
                     </Link>
                   ))}
@@ -169,8 +174,8 @@ export default function TodayBriefing() {
                 {`${cls.class_name} · 지난 수업 ${shortDate(cls.previous_lesson!.lesson_date)}`}
               </Text>
               <ul className={styles.list}>
-                {cls.previous_lesson!.common_items.map((item) => (
-                  <li key={item.name}>
+                {cls.previous_lesson!.common_items.map((item, index) => (
+                  <li key={`${index}-${item.name}`}>
                     <Text variant="bodyMd">{`${item.name}: ${item.value}`}</Text>
                   </li>
                 ))}

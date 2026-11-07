@@ -165,7 +165,7 @@ function LessonPageContent() {
         ))}
       </div>
 
-      {isTodaySelected ? <TodayBriefing /> : null}
+      {isTodaySelected ? <TodayBriefing date={list.selectedDateKey} /> : null}
 
       <div className={sectionTitleStyle}>
         <Text variant="headingMd">{selectedLabel}</Text>
