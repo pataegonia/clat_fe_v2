@@ -32,6 +32,7 @@ import StudentNameSearchBar, {
 import UsersIcon from '@/assets/icons/icon-users.svg'
 import AddStudentFormModal from '@/components/student/AddStudentFormModal/AddStudentFormModal'
 import BulkUploadModal from './_components/BulkUploadModal/BulkUploadModal'
+import AttentionStudents from './_components/AttentionStudents/AttentionStudents'
 import ConfirmModal from '@/components/common/ConfirmModal'
 import LeaveReasonPicker from '@/components/student/LeaveReasonPicker/LeaveReasonPicker'
 import { EMPTY_LEAVE_REASON, type LeaveReasonValue } from '@/types/leaveReason'
@@ -186,6 +187,12 @@ function ManagementContent() {
           >
             전체 학생
           </button>
+          <button
+            className={tab === 'attention' ? tabActiveStyle : tabStyle}
+            onClick={() => router.push('/management?tab=attention')}
+          >
+            살펴볼 학생
+          </button>
         </div>
         {tab === 'students' && (
           <div className={tabActionsStyle}>
@@ -210,6 +217,7 @@ function ManagementContent() {
           </div>
         )}
       </div>
+      {tab === 'attention' && <AttentionStudents />}
       {tab === 'class' && (
         <>
           <div style={{ marginBottom: '20px' }}>
