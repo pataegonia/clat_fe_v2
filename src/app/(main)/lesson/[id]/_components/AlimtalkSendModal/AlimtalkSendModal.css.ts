@@ -552,3 +552,30 @@ export const warningCount = style({
   margin: '2px 0 0',
 })
 
+
+/** 발송 전 AI 검수 경고 창 (가드레일 2차) */
+export const reviewBody = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '8px',
+  marginBottom: '16px',
+})
+
+export const reviewList = style({
+  display: 'flex',
+  flexDirection: 'column',
+  maxHeight: '50vh',
+  overflowY: 'auto',
+})
+
+export const reviewActions = style({
+  display: 'flex',
+  gap: '8px',
+  marginTop: '4px',
+})
+
+export const reviewFooter = style({
+  display: 'flex',
+  justifyContent: 'flex-end',
+  gap: '8px',
+})

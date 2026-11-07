@@ -11,6 +11,7 @@ import Modal from '@/components/common/Modal'
 import LessonMessageOrderModal from '../LessonMessageOrderModal/LessonMessageOrderModal'
 import ParentDashboardPreviewPanel from './ParentDashboardPreviewPanel'
 import AlimtalkMessagePreview from './AlimtalkMessagePreview'
+import { FeedbackReviewIssues } from './FeedbackReviewNotice'
 import useDisclosure from '@/hooks/useDisclosure'
 import type { LessonItemDetail } from '@/services/lesson'
 import type { LessonStudent } from '@/types/lessonStudent'
@@ -168,16 +169,36 @@ function channelAudienceLabel(sendToParent: boolean, sendToStudent: boolean) {
   return '수신 대상'
 }
 
-function aiChip(item?: Pick<ParentPreviewStatusItem, 'status' | 'stale'>) {
+type AiStatusView = Pick<
+  ParentPreviewStatusItem,
+  'status' | 'stale' | 'review_status' | 'review_issue_count'
+>
+
+function aiChip(item?: AiStatusView) {
   if (!item) return { variant: 'inProgress' as const, label: '대기' }
   if (item.stale) return { variant: 'inProgress' as const, label: '다시 만들기' }
-  if (item.status === 'ready') return { variant: 'done' as const, label: '완료' }
+  if (item.status === 'ready') {
+    if (item.review_status === 'flagged') {
+      return { variant: 'ended' as const, label: `확인 ${item.review_issue_count ?? 1}` }
+    }
+    if (item.review_status === 'unchecked') return { variant: 'default' as const, label: '검수 못 함' }
+    return { variant: 'done' as const, label: '완료' }
+  }
   if (item.status === 'failed') return { variant: 'ended' as const, label: '실패' }
   return { variant: 'inProgress' as const, label: '작성 중' }
 }
 
 function isAiReady(item?: Pick<ParentPreviewStatusItem, 'status' | 'stale'>) {
   return Boolean(item && item.status === 'ready' && !item.stale)
+}
+
+/** AI 검수가 문장을 짚은 채로 준비된 피드백 (가드레일 2차) */
+function isReviewFlagged(item?: AiStatusView) {
+  return isAiReady(item) && item?.review_status === 'flagged'
+}
+
+function hasParentPhone(row: LessonPreviewRow) {
+  return listParentPhones(row).some((phone) => hasPhone(phone))
 }
 
 function seoulWallClock(date: Date) {
@@ -277,6 +298,8 @@ export default function AlimtalkSendModal({
   const [dashboardPreview, setDashboardPreview] = useState<ParentPreviewResult | null>(null)
   const [dashboardLoading, setDashboardLoading] = useState(false)
   const [regenerating, setRegenerating] = useState(false)
+  const [reviewWarnOpen, setReviewWarnOpen] = useState(false)
+  const [reviewFlagged, setReviewFlagged] = useState<ParentPreviewStatusItem[]>([])
 
   useEffect(() => {
     setMounted(true)
@@ -328,6 +351,7 @@ export default function AlimtalkSendModal({
     setDashboardPreview(null)
     setFeedbackMode('AUTO')
     setEmptySendOpen(false)
+    setReviewWarnOpen(false)
     void loadPreview()
   }, [isOpen, loadPreview])
 
@@ -339,8 +363,17 @@ export default function AlimtalkSendModal({
         lessonId,
         rows.map((row) => row.student_id),
       )
-      .then((res) => {
-        if (!cancelled) setFeedbackMode(res.feedback_mode ?? 'AUTO')
+      .then(async (res) => {
+        if (cancelled) return
+        const mode = res.feedback_mode ?? 'AUTO'
+        setFeedbackMode(mode)
+        if (mode !== 'AUTO') return
+        // 발송 전에 검수 경고를 띄울 수 있게, 창을 열면 학부모 번호가 있는 학생 전원의 피드백을
+        // 미리 만들고 검수한다. 이미 만든 글은 다시 만들지 않는다.
+        const ids = rows.filter(hasParentPhone).map((row) => row.student_id)
+        if (ids.length === 0) return
+        setTrackedAiIds((prev) => new Set([...prev, ...ids]))
+        await lessonService.enqueueParentPreview(lessonId, ids)
       })
       .catch(() => {})
     return () => {
@@ -447,8 +480,8 @@ export default function AlimtalkSendModal({
   const selectedAiReadyCount = Array.from(selected).filter((id) =>
     isAiReady(aiStatusById[id]),
   ).length
-  const viewedAiReadyCount = Array.from(trackedAiIds).filter((id) =>
-    isAiReady(aiStatusById[id]),
+  const selectedFlaggedCount = Array.from(selected).filter((id) =>
+    isReviewFlagged(aiStatusById[id]),
   ).length
 
   const toggleAll = () => {
@@ -575,16 +608,20 @@ export default function AlimtalkSendModal({
       return
     }
     const ids = Array.from(selected)
+    let missing = 0
+    let flagged: ParentPreviewStatusItem[] = []
     try {
       const status = await lessonService.getParentPreviewStatus(lessonId, ids)
       const mode = status.feedback_mode ?? 'AUTO'
       setFeedbackMode(mode)
-      const missing = status.items.filter((item) => item.unwritten).length
-      if ((mode === 'ASSIST' || mode === 'MANUAL') && missing > 0) {
-        setEmptySendCount(missing)
-        setEmptySendOpen(true)
-        return
+      setAiStatusById((prev) => ({
+        ...prev,
+        ...Object.fromEntries(status.items.map((item) => [item.student_id, item])),
+      }))
+      if (mode === 'ASSIST' || mode === 'MANUAL') {
+        missing = status.items.filter((item) => item.unwritten).length
       }
+      flagged = status.items.filter((item) => isReviewFlagged(item))
     } catch {
       addToast({
         variant: 'error',
@@ -592,36 +629,83 @@ export default function AlimtalkSendModal({
       })
       return
     }
+    setEmptySendCount(missing)
+    // AI 검수가 짚은 문장이 있으면 발송 전에 학생별로 보여 준다. 발송을 막지는 않는다.
+    if (flagged.length > 0) {
+      setReviewFlagged(flagged)
+      setReviewWarnOpen(true)
+      return
+    }
+    if (missing > 0) {
+      setEmptySendOpen(true)
+      return
+    }
     setConfirmOpen(true)
   }
 
-  const handleRegenerate = async () => {
-    if (focusId == null) return
+  /** 검수 경고 창에서 "그대로 보내기" — 경고 창이 확인 단계를 겸한다. */
+  const sendDespiteReview = () => {
+    setReviewWarnOpen(false)
+    if (emptySendCount > 0) {
+      setEmptySendOpen(true)
+      return
+    }
+    void handleSend()
+  }
+
+  const regenerateStudent = async (studentId: number) => {
     setRegenerating(true)
     try {
       setTrackedAiIds((prev) => {
-        if (prev.has(focusId)) return prev
+        if (prev.has(studentId)) return prev
         const next = new Set(prev)
-        next.add(focusId)
+        next.add(studentId)
         return next
       })
-      await lessonService.enqueueParentPreview(lessonId, [focusId], true)
+      await lessonService.enqueueParentPreview(lessonId, [studentId], true)
       setAiStatusById((prev) => ({
         ...prev,
-        [focusId]: {
-          student_id: focusId,
+        [studentId]: {
+          student_id: studentId,
           status: 'pending',
           stale: false,
         },
       }))
+      return true
     } catch {
       addToast({
         variant: 'error',
         message: '피드백을 다시 만들지 못했어요.',
       })
+      return false
     } finally {
       setRegenerating(false)
     }
+  }
+
+  const handleRegenerate = async () => {
+    if (focusId == null) return
+    await regenerateStudent(focusId)
+  }
+
+  const regenerateFromReview = async (studentId: number) => {
+    if (!(await regenerateStudent(studentId))) return
+    const rest = reviewFlagged.filter((item) => item.student_id !== studentId)
+    setReviewFlagged(rest)
+    if (rest.length === 0) {
+      setReviewWarnOpen(false)
+      addToast({
+        variant: 'success',
+        message: '피드백을 다시 만들고 있어요. 다 되면 다시 보내기를 눌러 주세요.',
+      })
+    }
+  }
+
+  /** "직접 수정" — 대시보드 탭에서 그 학생 피드백을 눌러 고친다. */
+  const editFromReview = (studentId: number) => {
+    setReviewWarnOpen(false)
+    setFocusId(studentId)
+    setPreviewTab('dashboard')
   }
 
   const handleSend = async () => {
@@ -828,6 +912,11 @@ export default function AlimtalkSendModal({
                             {`⚠ 확인할 내용 ${r.warnings.length}개`}
                           </Text>
                         ) : null}
+                        {isReviewFlagged(aiStatusById[r.student_id]) ? (
+                          <Text as="p" variant="labelSm" color="gray700" className={styles.warningCount}>
+                            {`⚠ AI 피드백 확인할 문장 ${aiStatusById[r.student_id]?.review_issue_count ?? 1}개`}
+                          </Text>
+                        ) : null}
                       </div>
                     </div>
                   )
@@ -936,9 +1025,11 @@ export default function AlimtalkSendModal({
               {selected.size === 0
                 ? '보낼 학생을 선택해 주세요.'
                 : feedbackMode === 'AUTO'
-                  ? viewedAiReadyCount > 0
-                    ? `조회한 학생 중 AI ${viewedAiReadyCount}명은 바로 보여요. 나머지는 보낸 뒤 만들어져요.`
-                    : `선택한 ${selected.size}명에게 바로 보낼 수 있어요. 대시보드에서 조회한 학생만 AI를 미리 만들어요.`
+                  ? `AI 피드백 ${selectedAiReadyCount}/${selected.size}명 준비됐어요.${
+                      selectedFlaggedCount > 0
+                        ? ` 확인할 문장이 있는 학생 ${selectedFlaggedCount}명.`
+                        : ''
+                    } 다 되기 전에 보내면 나머지는 보낸 뒤 만들어져요.`
                   : `선택한 ${selected.size}명에게 바로 보낼 수 있어요. 피드백을 적지 않은 학생은 빈 칸으로 보내요.`}
             </Text>
           </div>
@@ -1021,6 +1112,56 @@ export default function AlimtalkSendModal({
         cancelLabel={'\uCDE8\uC18C'}
         confirmTour="alimtalk-send"
       />
+
+      <Modal isOpen={reviewWarnOpen} onClose={() => setReviewWarnOpen(false)} size="md">
+        <div className={styles.reviewBody}>
+          <Text variant="headingMd" as="h2">
+            AI 피드백에서 확인할 문장이 있어요
+          </Text>
+          <Text variant="bodyMd" color="gray500">
+            수업 기록과 맞지 않거나, 기록에 없는 내용일 수 있어요. 고치지 않고 보내도 돼요.
+          </Text>
+          <div className={styles.reviewList}>
+            {reviewFlagged.map((item) => {
+              const name =
+                rows.find((row) => row.student_id === item.student_id)?.student_name ?? '학생'
+              return (
+                <div key={item.student_id} className={styles.warningBox}>
+                  <Text variant="titleSm" color="gray900">
+                    {name}
+                  </Text>
+                  <FeedbackReviewIssues issues={item.review_issues ?? []} />
+                  <div className={styles.reviewActions}>
+                    <Button
+                      variant="outlined"
+                      size="sm"
+                      onClick={() => void regenerateFromReview(item.student_id)}
+                      disabled={regenerating}
+                    >
+                      다시 만들기
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => editFromReview(item.student_id)}
+                    >
+                      직접 수정
+                    </Button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+        <div className={styles.reviewFooter}>
+          <Button variant="ghost" size="md" onClick={() => setReviewWarnOpen(false)}>
+            닫기
+          </Button>
+          <Button variant="primary" size="md" onClick={sendDespiteReview} disabled={sending}>
+            {`그대로 ${selected.size}명에게 보내기`}
+          </Button>
+        </div>
+      </Modal>
 
       <Modal isOpen={lengthOpen} onClose={() => setLengthOpen(false)} size="sm">
         <div className={styles.lengthBody}>

@@ -7,6 +7,7 @@ import { lessonService, type ParentPreviewResult } from '@/services/lesson'
 import type { ParentDashboardData } from '@/services/parentDashboard'
 import ParentDashboardView from '@/app/parent/_components/ParentDashboardView'
 import * as parentStyles from '@/app/parent/[token]/parentDashboard.css'
+import FeedbackReviewNotice from './FeedbackReviewNotice'
 import * as styles from './AlimtalkSendModal.css'
 
 function toDashboardData(preview: ParentPreviewResult): ParentDashboardData {
@@ -162,7 +163,10 @@ export default function ParentDashboardPreviewPanel({
             학부모가 볼 피드백을 다시 만들 수 있어요. 고친 글은 그대로 남아요.
           </Text>
         </div>
-      ) : null}
+      ) : (
+        // 수업 입력이 바뀌었으면 지난 기록으로 한 검수라 보여 주지 않는다.
+        <FeedbackReviewNotice review={preview.review} />
+      )}
       <ParentDashboardView
         data={toDashboardData(preview)}
         embed
