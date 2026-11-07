@@ -9,6 +9,7 @@ import DateCard from './_components/DateCard/DateCard'
 import LessonCard from './_components/LessonCard/LessonCard'
 import AddCard from '@/components/common/AddCard'
 import AddLessonModal from './_components/AddLessonModal/AddLessonModal'
+import TodayBriefing from './_components/TodayBriefing/TodayBriefing'
 import PlusCircleIcon from '@/assets/icons/icon-plus-circle.svg'
 import ArrowLeftIcon from '@/assets/icons/icon-chevron-left.svg'
 import ArrowRightIcon from '@/assets/icons/icon-chevron-right.svg'
@@ -163,6 +164,8 @@ function LessonPageContent() {
           />
         ))}
       </div>
+
+      {isTodaySelected ? <TodayBriefing /> : null}
 
       <div className={sectionTitleStyle}>
         <Text variant="headingMd">{selectedLabel}</Text>
