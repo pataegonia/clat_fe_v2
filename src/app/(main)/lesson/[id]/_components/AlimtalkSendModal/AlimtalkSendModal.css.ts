@@ -526,3 +526,29 @@ export const staleBanner = style({
   border: `1px solid ${colors.warning200}`,
 })
 
+/** 발송 전 규칙 검사 경고 */
+export const warningBox = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+  margin: '12px 0',
+  padding: '12px 16px',
+  borderRadius: '8px',
+  backgroundColor: colors.warning50,
+  border: `1px solid ${colors.warning200}`,
+  borderLeft: `3px solid ${colors.warning500}`,
+})
+
+export const warningList = style({
+  margin: 0,
+  paddingLeft: '18px',
+  color: colors.gray900,
+  fontSize: fontStyles.bodyMd.fontSize,
+  lineHeight: '150%',
+})
+
+export const warningCount = style({
+  display: 'block',
+  margin: '2px 0 0',
+})
+

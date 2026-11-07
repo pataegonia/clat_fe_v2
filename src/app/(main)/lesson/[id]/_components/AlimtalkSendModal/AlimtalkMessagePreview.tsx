@@ -3,9 +3,29 @@
 import Text from '@/components/common/Text'
 import LessonAlimtalkFramePreview from '@/components/message/LessonAlimtalkFramePreview'
 import { stripParentDashboardPreviewLine } from '@/lib/lessonAlimtalkFrame'
-import type { LessonPreviewRow } from '@/services/lesson'
+import type { LessonPreviewRow, SendWarning } from '@/services/lesson'
 import { listParentPhones } from '@/lib/parentPhones'
 import * as styles from './AlimtalkSendModal.css'
+
+/** 발송 전 규칙 검사 결과. 막지 않고 알려만 준다. */
+function SendWarnings({ warnings }: { warnings: SendWarning[] }) {
+  if (warnings.length === 0) return null
+  return (
+    <div className={styles.warningBox} role="note" aria-label="보내기 전에 확인할 내용">
+      <Text variant="titleSm" color="gray900">
+        보내기 전에 확인해 주세요
+      </Text>
+      <ul className={styles.warningList}>
+        {warnings.map((warning, index) => (
+          <li key={`${warning.code}-${warning.item_name ?? ''}-${index}`}>{warning.message}</li>
+        ))}
+      </ul>
+      <Text variant="labelSm" color="gray600">
+        고치지 않아도 그대로 보낼 수 있어요.
+      </Text>
+    </div>
+  )
+}
 
 const CHAR_LIMIT = 1000
 
@@ -28,6 +48,8 @@ interface AlimtalkMessagePreviewProps {
   frameHeader: string
   sendToParent: boolean
   sendToStudent: boolean
+  /** 공통 항목 경고. 모든 학생 문자에 해당한다. */
+  commonWarnings: SendWarning[]
 }
 
 export default function AlimtalkMessagePreview({
@@ -35,6 +57,7 @@ export default function AlimtalkMessagePreview({
   frameHeader,
   sendToParent,
   sendToStudent,
+  commonWarnings,
 }: AlimtalkMessagePreviewProps) {
   if (!focused) {
     return (
@@ -47,6 +70,7 @@ export default function AlimtalkMessagePreview({
   return (
     <div>
       <Text variant="titleMd">메시지 미리보기</Text>
+      <SendWarnings warnings={[...(focused.warnings ?? []), ...commonWarnings]} />
       {sendToStudent ? (
         <div>
           <div className={styles.previewSectionLabel}>학생용</div>

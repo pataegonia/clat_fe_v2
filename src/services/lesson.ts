@@ -101,6 +101,19 @@ export interface UpdateLessonBody {
   student_data?: StudentData[]
 }
 
+/** 발송 전 규칙 검사 경고. 보내기 전에 보여 주기만 하고 발송은 막지 않는다. */
+export type SendWarningCode =
+  | 'EMPTY_ITEM'
+  | 'ABSENT_WITH_SCORE'
+  | 'SCORE_OVER_MAX'
+  | 'MEANINGLESS_TEXT'
+
+export interface SendWarning {
+  code: SendWarningCode
+  item_name: string | null
+  message: string
+}
+
 export interface LessonPreviewRow {
   student_id: number
   student_name: string
@@ -111,11 +124,14 @@ export interface LessonPreviewRow {
   message_for_parent: string
   student_char_count?: number
   parent_char_count?: number
+  warnings?: SendWarning[]
 }
 
-/** GET /lessons/:id/preview — envelope data field is { data: LessonPreviewRow[] } */
+/** GET /lessons/:id/preview — envelope data field is { data: LessonPreviewRow[], common_warnings } */
 export interface LessonPreviewResult {
   data: LessonPreviewRow[]
+  /** 공통 항목 경고 (학생마다 같아서 한 번만 온다) */
+  common_warnings?: SendWarning[]
 }
 
 export type LessonSendChannel = 'STUDENT' | 'PARENT' | 'BOTH'

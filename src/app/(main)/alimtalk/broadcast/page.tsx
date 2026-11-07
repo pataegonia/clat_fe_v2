@@ -16,6 +16,7 @@ import { classService, type Class } from '@/services/class'
 import { studentService } from '@/services/student'
 import type { Student } from '@/types/student'
 import { listParentPhones } from '@/lib/parentPhones'
+import type { SendWarning } from '@/services/lesson'
 import {
   alimtalkService,
   pollBatchUntilSettled,
@@ -40,6 +41,15 @@ import * as styles from './broadcast.css'
 
 function hasPhone(value: string | null | undefined) {
   return Boolean(value && String(value).replace(/\D/g, '').length >= 8)
+}
+
+/** 발송 전 규칙 검사(dsf 같은 의미 없는 입력). 검사가 실패해도 발송은 막지 않는다. */
+async function findSendWarnings(body: string): Promise<SendWarning[]> {
+  try {
+    return await alimtalkService.checkBroadcast(body)
+  } catch {
+    return []
+  }
 }
 
 function resolveChannel(
@@ -113,6 +123,8 @@ export default function AlimtalkBroadcastPage() {
   const [sendProgress, setSendProgress] = useState<{ sent: number; total: number } | null>(null)
   const [lengthOpen, setLengthOpen] = useState(false)
   const [lengthNames, setLengthNames] = useState<string[]>([])
+  const [warningOpen, setWarningOpen] = useState(false)
+  const [warnings, setWarnings] = useState<SendWarning[]>([])
 
   const channel = resolveChannel(sendToParent, sendToStudent)
 
@@ -281,7 +293,7 @@ export default function AlimtalkBroadcastPage() {
     sendToStudent,
   )
 
-  const handleSend = async () => {
+  const handleSend = async (skipWarningCheck = false) => {
     if (sending) return
     if (!channel) {
       error('학부모 또는 학생 중 하나 이상 선택해 주세요.')
@@ -299,6 +311,16 @@ export default function AlimtalkBroadcastPage() {
       setLengthNames(overNames)
       setLengthOpen(true)
       return
+    }
+    if (!skipWarningCheck) {
+      setSending(true)
+      const found = await findSendWarnings(body.trim())
+      setSending(false)
+      if (found.length > 0) {
+        setWarnings(found)
+        setWarningOpen(true)
+        return
+      }
     }
 
     setSending(true)
@@ -616,6 +638,34 @@ export default function AlimtalkBroadcastPage() {
         <Button variant="primary" size="md" fullWidth onClick={() => setLengthOpen(false)}>
           확인
         </Button>
+      </Modal>
+      <Modal isOpen={warningOpen} onClose={() => setWarningOpen(false)} size="sm">
+        <div className={styles.lengthBody}>
+          <Text variant="headingMd" as="h2" className={styles.lengthTitle}>
+            보내기 전에 확인해 주세요
+          </Text>
+          {warnings.map((warning, index) => (
+            <Text key={`${warning.code}-${index}`} variant="bodyLg" color="gray500">
+              {warning.message}
+            </Text>
+          ))}
+        </div>
+        <div className={styles.warningActions}>
+          <Button variant="ghost" size="md" fullWidth onClick={() => setWarningOpen(false)}>
+            고칠게요
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            fullWidth
+            onClick={() => {
+              setWarningOpen(false)
+              void handleSend(true)
+            }}
+          >
+            그대로 보내기
+          </Button>
+        </div>
       </Modal>
     </div>
   )

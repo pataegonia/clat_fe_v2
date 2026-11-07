@@ -1,4 +1,5 @@
 import axiosInstance from '@/lib/api/axiosInstance'
+import type { SendWarning } from '@/services/lesson'
 
 export type AlimtalkDeliveryMode = 'mock' | 'live'
 export type AlimtalkMessageStatus = 'PENDING' | 'SUCCESS' | 'FAIL'
@@ -189,6 +190,13 @@ export const alimtalkService = {
       return inner.data as BroadcastSendResult
     }
     return inner as BroadcastSendResult
+  },
+
+  /** 전체 공지 발송 전 규칙 검사. 경고가 있어도 발송은 막지 않는다. */
+  async checkBroadcast(body: string): Promise<SendWarning[]> {
+    const { data } = await axiosInstance.post('/alimtalk/broadcast/check', { body })
+    const inner = (data?.data ?? data) as { warnings?: SendWarning[] } | undefined
+    return inner?.warnings ?? []
   },
 
   async getTestStatus(): Promise<AlimtalkTestStatus> {

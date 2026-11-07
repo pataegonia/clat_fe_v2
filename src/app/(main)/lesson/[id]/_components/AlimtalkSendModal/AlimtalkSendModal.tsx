@@ -22,6 +22,7 @@ import {
   type LessonSendSchedule,
   type ParentPreviewResult,
   type ParentPreviewStatusItem,
+  type SendWarning,
 } from '@/services/lesson'
 import { useQueryClient } from '@tanstack/react-query'
 import { invalidateLessonLists } from '@/lib/queryKeys'
@@ -249,6 +250,7 @@ export default function AlimtalkSendModal({
   const teacherName = useUserStore((s) => s.user?.name) ?? '강사명'
   const messageOrderModal = useDisclosure()
   const [rows, setRows] = useState<LessonPreviewRow[]>([])
+  const [commonWarnings, setCommonWarnings] = useState<SendWarning[]>([])
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [focusId, setFocusId] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
@@ -286,6 +288,7 @@ export default function AlimtalkSendModal({
       const res = await lessonService.previewLesson(lessonId)
       const list = res.data ?? []
       setRows(list)
+      setCommonWarnings(res.common_warnings ?? [])
       const ids = new Set(list.map((r) => r.student_id))
       setSelected(ids)
       setFocusId(list[0]?.student_id ?? null)
@@ -296,6 +299,7 @@ export default function AlimtalkSendModal({
           '\uBBF8\uB9AC\uBCF4\uAE30\uB97C \uBD88\uB7EC\uC624\uC9C0 \uBABB\uD588\uC5B4\uC694. \uC800\uC7A5 \uD6C4 \uB2E4\uC2DC \uC2DC\uB3C4\uD574 \uC8FC\uC138\uC694.',
       })
       setRows([])
+      setCommonWarnings([])
       setSelected(new Set())
       setFocusId(null)
     } finally {
@@ -819,6 +823,11 @@ export default function AlimtalkSendModal({
                             {limitLabel}
                           </Text>
                         ) : null}
+                        {r.warnings && r.warnings.length > 0 ? (
+                          <Text as="p" variant="labelSm" color="gray700" className={styles.warningCount}>
+                            {`⚠ 확인할 내용 ${r.warnings.length}개`}
+                          </Text>
+                        ) : null}
                       </div>
                     </div>
                   )
@@ -892,6 +901,7 @@ export default function AlimtalkSendModal({
                 frameHeader={frameHeader}
                 sendToParent={sendToParent}
                 sendToStudent={sendToStudent}
+                commonWarnings={commonWarnings}
               />
             )}
           </div>

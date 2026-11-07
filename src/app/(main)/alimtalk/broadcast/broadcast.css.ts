@@ -337,6 +337,11 @@ export const lengthTitle = style({
   marginBottom: '8px',
 })
 
+export const warningActions = style({
+  display: 'flex',
+  gap: '8px',
+})
+
 export const summaryBar = style({
   display: 'flex',
   alignItems: 'center',
