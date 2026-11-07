@@ -352,6 +352,8 @@ export default function AlimtalkSendModal({
     setFeedbackMode('AUTO')
     setEmptySendOpen(false)
     setReviewWarnOpen(false)
+    // 지난번 학생 목록으로 미리 생성 요청이 한 번 더 나가지 않게 비우고 다시 읽는다.
+    setRows([])
     void loadPreview()
   }, [isOpen, loadPreview])
 
