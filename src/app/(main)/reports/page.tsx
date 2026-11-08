@@ -6,7 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import Text from '@/components/common/Text'
 import Button from '@/components/common/Button'
 import { useToastStore } from '@/stores/toastStore'
-import { reportService, type ReportKind } from '@/services/reports'
+import { reportNotificationNote, reportService, type ReportKind } from '@/services/reports'
 import ReportCard from './_components/ReportCard'
 import * as styles from './reports.css'
 
@@ -54,7 +54,10 @@ export default function ReportsPage() {
     onSuccess: (result) => {
       setSelected(new Set())
       refresh()
-      addToast({ variant: 'success', message: `${result.published_count}명 보고서를 학부모에게 공개했어요.` })
+      addToast({
+        variant: 'success',
+        message: `${result.published_count}명 보고서를 학부모에게 공개했어요.${reportNotificationNote(result.notification)}`,
+      })
     },
     onError: () => addToast({ variant: 'error', message: '공개하지 못했어요.' }),
   })

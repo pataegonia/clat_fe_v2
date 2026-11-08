@@ -5,6 +5,7 @@ export function batchTypeLabel(type: AdminAlimtalkBatchType | string): string {
   if (type === 'ATTENDANCE') return '출결'
   if (type === 'BROADCAST') return '공지'
   if (type === 'TEST') return '테스트'
+  if (type === 'REPORT') return '보고서'
   return type
 }
 
@@ -14,6 +15,7 @@ export function batchTitle(row: {
   lesson_date: string | null
 }): string {
   if (row.batch_type === 'BROADCAST') return '전체 공지'
+  if (row.batch_type === 'REPORT') return '보고서 알림'
   if (row.class_name) return row.class_name
   return '알림톡 발송'
 }

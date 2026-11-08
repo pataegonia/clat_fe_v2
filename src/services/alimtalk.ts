@@ -26,7 +26,7 @@ function unwrapAlimtalkSettings(res: { data?: unknown }): AlimtalkSettings {
   return inner as AlimtalkSettings
 }
 
-export type AlimtalkBatchType = 'LESSON' | 'ATTENDANCE' | 'BROADCAST' | 'TEST'
+export type AlimtalkBatchType = 'LESSON' | 'ATTENDANCE' | 'BROADCAST' | 'TEST' | 'REPORT'
 
 export type AlimtalkTestKind = 'LESSON' | 'ATTENDANCE' | 'BROADCAST'
 

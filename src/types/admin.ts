@@ -197,7 +197,7 @@ export type AdminLessonList = {
 }
 
 export type AdminAlimtalkStatus = 'all' | 'SUCCESS' | 'FAIL'
-export type AdminAlimtalkBatchType = 'LESSON' | 'ATTENDANCE' | 'BROADCAST' | 'TEST'
+export type AdminAlimtalkBatchType = 'LESSON' | 'ATTENDANCE' | 'BROADCAST' | 'TEST' | 'REPORT'
 
 export type AdminActionType = 'APPROVE' | 'REJECT' | 'DELETE' | 'SUSPEND' | 'RESET_PASSWORD'
 

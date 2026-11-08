@@ -70,7 +70,8 @@ function ParentDashboardPage({ params }: { params: Promise<{ token: string }> })
   const search = useSearchParams()
   const lessonParam = search.get('lesson')
   const lessonId = lessonParam ? Number(lessonParam) : undefined
-  const [tab, setTab] = useState<Tab>('lesson')
+  // 보고서 도착 알림톡 링크는 ?tab=reports로 보고서 탭을 바로 연다
+  const [tab, setTab] = useState<Tab>(() => (search.get('tab') === 'reports' ? 'reports' : 'lesson'))
   const [data, setData] = useState<ParentDashboardData | null>(null)
   const [lessons, setLessons] = useState<ParentLessonListItem[]>([])
   const [notices, setNotices] = useState<ParentNoticeItem[]>([])

@@ -10,7 +10,13 @@ import ConfirmModal from '@/components/common/ConfirmModal'
 import { ReportNumbers, ReportSummaryView } from '@/components/report/ReportView'
 import { FeedbackReviewIssues } from '@/app/(main)/lesson/[id]/_components/AlimtalkSendModal/FeedbackReviewNotice'
 import { useToastStore } from '@/stores/toastStore'
-import { reportService, type ReportStatus, type ReportSummary, type TeacherReport } from '@/services/reports'
+import {
+  reportNotificationNote,
+  reportService,
+  type ReportStatus,
+  type ReportSummary,
+  type TeacherReport,
+} from '@/services/reports'
 import * as styles from '../reports.css'
 
 const STATUS_CHIP: Record<ReportStatus, { variant: 'inProgress' | 'active' | 'done' | 'ended'; label: string }> = {
@@ -67,9 +73,12 @@ export default function ReportCard({ report, selectable, selected, onToggle, onC
   })
   const publish = useMutation({
     mutationFn: () => reportService.publish([report.id]),
-    onSuccess: () => {
+    onSuccess: (result) => {
       onChanged()
-      addToast({ variant: 'success', message: `${report.student_name} 학생 보고서를 학부모에게 공개했어요.` })
+      addToast({
+        variant: 'success',
+        message: `${report.student_name} 학생 보고서를 학부모에게 공개했어요.${reportNotificationNote(result.notification)}`,
+      })
     },
     onError: () => fail('공개하지 못했어요.'),
   })

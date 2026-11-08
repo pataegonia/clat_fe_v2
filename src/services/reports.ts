@@ -86,8 +86,25 @@ export const reportService = {
     await axiosInstance.post(`/reports/${id}/regenerate`)
   },
 
-  async publish(ids: number[]): Promise<{ published_count: number }> {
+  async publish(
+    ids: number[],
+  ): Promise<{ published_count: number; notification?: ReportNotification }> {
     const { data } = await axiosInstance.post('/reports/publish', { ids })
     return unwrap(data)
   },
+}
+
+/** 공개할 때 보낸 학부모 알림톡 결과. 템플릿 승인 전에는 enabled=false라 아무것도 보내지 않는다. */
+export interface ReportNotification {
+  enabled: boolean
+  queued_count: number
+  failed?: boolean
+}
+
+/** 공개 안내 뒤에 붙일 알림톡 문구. 알림을 안 쓰거나 보낼 사람이 없으면 빈 문자열. */
+export function reportNotificationNote(notification?: ReportNotification): string {
+  if (!notification?.enabled) return ''
+  if (notification.failed) return ' 알림톡은 보내지 못했어요.'
+  if (notification.queued_count === 0) return ''
+  return ` 학부모에게 알림톡 ${notification.queued_count}건을 보냈어요.`
 }
