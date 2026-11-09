@@ -396,7 +396,7 @@ export const PARENT_BEATS: TutorialBeat[] = [
   {
     anchor: 'parent-feedback',
     title: '선생님 피드백',
-    body: '대시보드에서 고친 글이 그대로 보입니다.',
+    body: '보낸 피드백이 그대로 보입니다. 보내기 전에는 준비 중으로 보입니다.',
     mode: 'next',
   },
   {
