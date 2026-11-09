@@ -9,6 +9,7 @@ import { AiModeSection } from './_components/AiModeSection'
 import { AiToneSection } from './_components/AiToneSection'
 import { AiCriteriaSection } from './_components/AiCriteriaSection'
 import { AiMiscSection } from './_components/AiMiscSection'
+import { FeatureTrialSection } from './_components/FeatureTrialSection'
 
 export default function AiSettingsPage() {
   const form = useAiSettingsForm()
@@ -53,6 +54,7 @@ export default function AiSettingsPage() {
           lengthLocked={form.settings.feedback_mode === 'MANUAL'}
         />
         <AiMiscSection settings={form.settings} onUpdate={form.updateSetting} />
+        <FeatureTrialSection manualMode={form.settings.feedback_mode === 'MANUAL'} />
       </div>
     </div>
     )}
