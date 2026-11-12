@@ -28,6 +28,15 @@ const RESOLVE_BATCH_MAX = 100
 const APPLY_FAILED_MESSAGE = 'AI 제안을 적용하지 못했어요.'
 const SAVE_FAILED_MESSAGE = '저장에 실패했어요.'
 const ACTION_FAILED_MESSAGE = '처리하지 못했어요.'
+/** 다른 수업으로 옮기기가 안 될 때(서버 HOMEWORK_PHOTO_INVALID_TARGET) */
+const MOVE_INVALID_TARGET_MESSAGE =
+  '그 반·날짜로 옮길 수 없어요. 그 반 학생이 아니거나 그 날짜에 이미 낸 숙제가 있어요.'
+
+function actionFailedMessage(action: HwResolveAction, code: string | null): string {
+  return action.type === 'MOVE' && code === 'HOMEWORK_PHOTO_INVALID_TARGET'
+    ? MOVE_INVALID_TARGET_MESSAGE
+    : ACTION_FAILED_MESSAGE
+}
 
 export type SendPromptDecision = 'proceed' | 'abort'
 
@@ -180,13 +189,15 @@ export function useLessonHomeworkPhotos({
   /** 옆 창 처리 한 건. 요청이 실패하거나 서버가 ok:false를 주면 토스트를 띄운다. */
   const resolveOne = async (action: HwResolveAction): Promise<boolean> => {
     let ok = false
+    let code: string | null = null
     try {
       const { results } = await homeworkPhotoService.resolve(lessonId, [action])
       ok = results.length > 0 && results.every((result) => result.ok)
+      code = results.find((result) => !result.ok)?.code ?? null
     } catch {
       ok = false
     }
-    if (!ok) addToast({ variant: 'error', message: ACTION_FAILED_MESSAGE })
+    if (!ok) addToast({ variant: 'error', message: actionFailedMessage(action, code) })
     await refresh()
     return ok
   }
