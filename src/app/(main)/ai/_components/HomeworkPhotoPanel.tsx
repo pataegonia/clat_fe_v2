@@ -8,14 +8,11 @@ import ConfirmModal from '@/components/common/ConfirmModal'
 import { useToastStore } from '@/stores/toastStore'
 import { homeworkPhotoService } from '@/services/homeworkPhoto'
 import { hwKeys } from '@/lib/homeworkPhoto/queryKeys'
-import { HW_FEATURE_LABEL } from '@/lib/homeworkPhoto/labels'
 import * as css from './featureTrial.css'
 
 type PanelProps = {
   /** 선생님이 이 체험을 켰는지 */
   enabled: boolean
-  /** 체험이 목록에 없을 때(운영에서 꺼 둠) 남은 사진을 지우는 칸만 둔다. 이때는 제목도 함께 보인다. */
-  leftoverOnly?: boolean
 }
 
 /** 사진 모두 지우기. 되돌릴 수 없어 한 번 더 묻고, 닫은 뒤에 지운다. */
@@ -57,7 +54,7 @@ function ClearPhotosButton({ disabled, onClear }: { disabled: boolean; onClear: 
  * 기능 체험 "사진 숙제 AI 확인"의 상태 칸: 받은 사진 수와 사진 모두 지우기.
  * 지우기는 체험을 꺼 두어도 된다. 꺼져 있고 받은 사진도 없으면 아무것도 보이지 않는다.
  */
-export function HomeworkPhotoPanel({ enabled, leftoverOnly = false }: PanelProps) {
+export function HomeworkPhotoPanel({ enabled }: PanelProps) {
   const queryClient = useQueryClient()
   const addToast = useToastStore((s) => s.addToast)
   const { data, isPending } = useQuery({
@@ -74,17 +71,13 @@ export function HomeworkPhotoPanel({ enabled, leftoverOnly = false }: PanelProps
     onSettled: () => queryClient.invalidateQueries({ queryKey: hwKeys.all }),
   })
 
-  // 남은 사진 칸은 체험 목록에 없는 기능이라 불러오는 중이거나 못 읽었을 때 아무것도 보이지 않는다.
-  if (isPending) return leftoverOnly ? null : <Text color="gray500">불러오는 중…</Text>
+  if (isPending) return <Text color="gray500">불러오는 중…</Text>
   if (!data) {
-    if (leftoverOnly) return null
-    return (
-      <Text color="error500">받은 사진 수를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</Text>
-    )
+    return <Text color="error500">받은 사진 수를 불러오지 못했어요. 잠시 뒤 다시 열어 주세요.</Text>
   }
   if (!enabled && data.photo_count === 0) return null
 
-  const panel = (
+  return (
     <div className={css.panel}>
       <div className={css.photoRow}>
         <Text variant="bodyMd">{`받은 사진 ${data.photo_count}장`}</Text>
@@ -93,13 +86,6 @@ export function HomeworkPhotoPanel({ enabled, leftoverOnly = false }: PanelProps
           onClear={() => clear.mutate()}
         />
       </div>
-    </div>
-  )
-  if (!leftoverOnly) return panel
-  return (
-    <div className={css.trial}>
-      <h3 className={css.trialTitle}>{HW_FEATURE_LABEL}</h3>
-      {panel}
     </div>
   )
 }

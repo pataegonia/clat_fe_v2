@@ -169,10 +169,6 @@ export function FeatureTrialSection({ manualMode }: { manualMode: boolean }) {
             onToggle={() => onToggle(trial)}
           />
         ))}
-      {/* 운영에서 사진 숙제를 꺼 두면 체험이 목록에 없다. 남은 사진이 있으면 지울 수 있게 둔다. */}
-      {data && !data.some((trial) => trial.key === 'HOMEWORK_PHOTO') ? (
-        <HomeworkPhotoPanel enabled={false} leftoverOnly />
-      ) : null}
       <TrialOffConfirm
         trialKey={confirmOffKey}
         onCancel={() => setConfirmOffKey(null)}

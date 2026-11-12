@@ -110,8 +110,6 @@ function ConsentRecordForm({ busy, onCancel, onSubmit }: RecordFormProps) {
 type ConsentRowProps = {
   scope: HwConsentScope
   active: HwConsentRecord | null
-  /** 기록은 기능을 쓸 수 있을 때(available)만 된다. 철회는 늘 된다. */
-  canRecord: boolean
   busy: boolean
   recording: boolean
   onStartRecord: () => void
@@ -122,13 +120,13 @@ type ConsentRowProps = {
 
 /** 동의 한 가지(사진 제출 또는 AI 확인): 지금 상태와 기록·철회 */
 function ConsentRow(props: ConsentRowProps) {
-  const { scope, active, canRecord, busy, recording } = props
+  const { scope, active, busy, recording } = props
   return (
     <div className={styles.hwSection}>
       <div className={styles.hwRowHead}>
         <span className={styles.hwRowLabel}>{HW_CONSENT_SCOPE_LABELS[scope]}</span>
         <div className={styles.hwActions}>
-          {canRecord && !recording ? (
+          {!recording ? (
             <Button
               type="button"
               variant="ghost"
@@ -199,7 +197,6 @@ export function HomeworkPhotoConsentCard({ homeworkPhoto }: CardProps) {
           key={scope}
           scope={scope}
           active={activeConsent(state.consents, scope)}
-          canRecord={state.available}
           busy={busy}
           recording={recordScope === scope}
           onStartRecord={() => setRecordScope(scope)}

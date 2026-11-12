@@ -22,7 +22,7 @@ export type HwStoredReason =
   | { code: 'PARTIAL'; answered: number; total: number; blank: HwProblemRef[]; joke: HwProblemRef[] }
 
 // ---- teacher: status / delete-all ----
-export type HwStatus = { available: boolean; enabled: boolean; photo_count: number }
+export type HwStatus = { enabled: boolean; photo_count: number }
 export type HwDeleteAllResult = { deleted_photos: number }
 
 // ---- teacher: student consent + link ----
@@ -37,7 +37,7 @@ export type HwConsentRecord = {
   withdrawn_at: string | null
 }
 export type HwLinkBlockedReason =
-  | 'REVOKED' | 'STUDENT_DELETED' | 'TEACHER_INACTIVE' | 'FEATURE_OFF' | 'TRIAL_OFF'
+  | 'REVOKED' | 'STUDENT_DELETED' | 'TEACHER_INACTIVE' | 'TRIAL_OFF'
   | 'LINK_BEFORE_TRIAL' | 'NO_CONSENT' | 'NOT_ENROLLED' | 'UNCLAIMED_EXPIRED'
 export type HwLinkStatus = {
   id: number
@@ -52,7 +52,6 @@ export type HwLinkStatus = {
   blocked_reason: HwLinkBlockedReason | null
 }
 export type HwStudentState = {
-  available: boolean
   enabled: boolean
   effective: { upload: boolean; ai: boolean }
   /** newest first, max 20, withdrawn rows included */

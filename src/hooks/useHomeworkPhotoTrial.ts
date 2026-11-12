@@ -2,8 +2,6 @@ import { useQuery } from '@tanstack/react-query'
 import { featureTrialService } from '@/services/featureTrials'
 
 export type HomeworkPhotoTrial = {
-  /** 서버가 이 체험을 목록에 준다(운영 스위치가 켜져 있다) */
-  available: boolean
   /** 선생님이 켰다 */
   enabled: boolean
   isLoading: boolean
@@ -19,5 +17,5 @@ export function useHomeworkPhotoTrial(): HomeworkPhotoTrial {
     queryFn: () => featureTrialService.list(),
   })
   const trial = data?.find((t) => t.key === 'HOMEWORK_PHOTO')
-  return { available: trial !== undefined, enabled: trial?.enabled === true, isLoading: isPending }
+  return { enabled: trial?.enabled === true, isLoading: isPending }
 }

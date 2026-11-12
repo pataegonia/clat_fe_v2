@@ -231,7 +231,6 @@ export const HW_LINK_BLOCKED_LABELS: Record<HwLinkBlockedReason, string> = {
   REVOKED: '끊은 링크예요',
   STUDENT_DELETED: '지운 학생이에요',
   TEACHER_INACTIVE: '계정 상태 때문에 쓸 수 없어요',
-  FEATURE_OFF: '기능이 꺼져 있어요',
   TRIAL_OFF: '기능이 꺼져 있어요',
   LINK_BEFORE_TRIAL: '기능을 껐다 켜서 끊긴 링크예요',
   NO_CONSENT: '사진 제출 동의가 없어요',
