@@ -15,6 +15,7 @@ function isPublicAppRoute(pathname: string): boolean {
     pathname === '/' ||
     pathname.startsWith('/parent') ||
     pathname.startsWith('/check') ||
+    pathname.startsWith('/submit') ||
     pathname.startsWith('/terms') ||
     pathname.startsWith('/privacy')
   )
