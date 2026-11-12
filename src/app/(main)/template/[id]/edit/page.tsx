@@ -10,6 +10,7 @@ import TemplateName from '../../_components/TemplateName/TemplateName'
 import ContentSection from '../../_components/ContentSection/ContentSection'
 import MessageSettings from '../../_components/MessageSettings/MessageSettings'
 import MessagePreview from '../../_components/MessagePreview/MessagePreview'
+import HomeworkPhotoTemplateCard from './_components/HomeworkPhotoTemplateCard'
 import {
   pageStyle,
   leftSectionStyle,
@@ -97,6 +98,7 @@ function TemplateEditForm({ id, initialData }: { id: number; initialData: Editor
               />
             </div>
           </div>
+          <HomeworkPhotoTemplateCard templateId={id} />
         </div>
         <div className={rightSectionStyle}>
           <div className={sectionBoxStyle}>

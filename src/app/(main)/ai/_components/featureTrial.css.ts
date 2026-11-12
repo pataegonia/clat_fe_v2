@@ -59,3 +59,12 @@ export const actions = style({
   justifyContent: 'flex-end',
   gap: '8px',
 })
+
+/** 사진 숙제 칸: 받은 사진 수와 사진 모두 지우기 */
+export const photoRow = style({
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '8px',
+})

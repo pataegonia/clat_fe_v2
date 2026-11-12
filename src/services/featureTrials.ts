@@ -2,7 +2,7 @@ import axiosInstance from '@/lib/api/axiosInstance'
 
 /** 기능 체험 (GET /feature-trials, PUT /feature-trials/:key). 선생님마다 켜고 끄며, 바꾸면 바로 적용된다. */
 
-export type FeatureTrialKey = 'STYLE_LEARNING'
+export type FeatureTrialKey = 'STYLE_LEARNING' | 'HOMEWORK_PHOTO'
 
 export interface FeatureTrial {
   key: FeatureTrialKey

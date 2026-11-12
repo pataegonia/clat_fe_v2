@@ -8,8 +8,11 @@ import AddStudentFormModal from '@/components/student/AddStudentFormModal/AddStu
 import * as styles from './studentDashboard.css'
 import { MSG } from './_lib/studentDashboardShared'
 import { useStudentDashboard } from './_hooks/useStudentDashboard'
+import { useStudentHomeworkPhoto } from './_hooks/useStudentHomeworkPhoto'
 import { StudentProfileCard } from './_components/StudentProfileCard'
 import { StudentMemoCard } from './_components/StudentMemoCard'
+import { HomeworkPhotoConsentCard } from './_components/HomeworkPhotoConsentCard'
+import { HomeworkPhotoLinkCard } from './_components/HomeworkPhotoLinkCard'
 import { StudentStatsRow } from './_components/StudentStatsRow'
 import { StudentIncompleteList } from './_components/StudentIncompleteList'
 import { StudentDashboardTabs } from './_components/StudentDashboardTabs'
@@ -23,6 +26,7 @@ export default function StudentDashboardPage({ params }: { params: Promise<{ id:
   const router = useRouter()
 
   const dash = useStudentDashboard(studentId)
+  const homeworkPhoto = useStudentHomeworkPhoto(studentId)
   const addToast = useToastStore((s) => s.addToast)
   const tour = useTutorial()
   const [openingParent, setOpeningParent] = useState(false)
@@ -90,6 +94,8 @@ export default function StudentDashboardPage({ params }: { params: Promise<{ id:
             onEdit={dash.editStudent.open}
           />
           <StudentMemoCard memo={detail.memo ?? ''} onSave={dash.saveMemo} />
+          <HomeworkPhotoConsentCard homeworkPhoto={homeworkPhoto} />
+          <HomeworkPhotoLinkCard homeworkPhoto={homeworkPhoto} />
           <StudentStatsRow
             monthlyCompletionPct={dash.monthlyCompletionPct}
             monthlyAttendancePct={dash.monthlyAttendancePct}

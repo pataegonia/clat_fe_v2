@@ -1030,3 +1030,148 @@ export const alimParentLink = style({
     },
   },
 })
+
+/* 사진 숙제 동의·제출 링크 카드(memoCard 안) */
+
+export const hwSection = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+  paddingTop: '12px',
+  borderTop: `1px solid ${colors.gray50}`,
+})
+
+export const hwRowHead = style({
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: '8px',
+})
+
+export const hwRowLabel = style({
+  fontSize: '14px',
+  fontWeight: 600,
+  letterSpacing: '-0.03em',
+  color: colors.gray900,
+})
+
+export const hwText = style({
+  fontSize: '14px',
+  lineHeight: 1.5,
+  letterSpacing: '-0.02em',
+  color: colors.gray700,
+  overflowWrap: 'anywhere',
+})
+
+export const hwWarn = style({
+  fontSize: fontStyles.labelSm.fontSize,
+  fontWeight: fontStyles.labelSm.fontWeight,
+  lineHeight: '140%',
+  letterSpacing: '-0.03em',
+  color: colors.error500,
+})
+
+export const hwActions = style({
+  display: 'flex',
+  flexWrap: 'wrap',
+  justifyContent: 'flex-end',
+  gap: '6px',
+})
+
+export const hwForm = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '12px',
+  marginTop: '4px',
+  padding: '14px',
+  borderRadius: '12px',
+  backgroundColor: colors.gray50,
+})
+
+export const hwField = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+})
+
+export const hwFieldLabel = style({
+  fontSize: fontStyles.labelSm.fontSize,
+  fontWeight: 600,
+  letterSpacing: '-0.03em',
+  color: colors.gray700,
+})
+
+export const hwChipRow = style({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '6px',
+})
+
+export const hwChip = style({
+  padding: '6px 12px',
+  borderRadius: '999px',
+  border: `1px solid ${colors.gray100}`,
+  backgroundColor: colors.white,
+  color: colors.gray700,
+  fontSize: '14px',
+  fontFamily: 'inherit',
+  cursor: 'pointer',
+  selectors: {
+    '&:focus-visible': {
+      outline: `2px solid ${colors.primary400}`,
+      outlineOffset: '2px',
+    },
+  },
+})
+
+export const hwChipSelected = style({
+  borderColor: colors.primary500,
+  backgroundColor: colors.primary50,
+  color: colors.primary600,
+  fontWeight: 600,
+})
+
+export const hwInfoList = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '6px',
+})
+
+export const hwInfoRow = style({
+  display: 'flex',
+  justifyContent: 'space-between',
+  gap: '12px',
+})
+
+export const hwInfoLabel = style({
+  flexShrink: 0,
+  fontSize: '14px',
+  letterSpacing: '-0.02em',
+  color: colors.gray500,
+})
+
+export const hwInfoValue = style({
+  fontSize: '14px',
+  letterSpacing: '-0.02em',
+  color: colors.gray900,
+  textAlign: 'right',
+  overflowWrap: 'anywhere',
+})
+
+export const hwUrlBox = style({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '8px',
+  padding: '14px',
+  borderRadius: '12px',
+  backgroundColor: colors.primary50,
+})
+
+export const hwUrl = style({
+  fontSize: '13px',
+  lineHeight: 1.5,
+  color: colors.gray900,
+  wordBreak: 'break-all',
+  userSelect: 'all',
+})
