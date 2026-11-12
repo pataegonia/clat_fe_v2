@@ -1,10 +1,11 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 
 import { lessonService } from '@/services/lesson'
 import useDisclosure from './useDisclosure'
 import { useToastStore } from '@/stores/toastStore'
 import { useLessonLoad } from './lesson/useLessonLoad'
 import { useLessonDirtySave } from './lesson/useLessonDirtySave'
+import { useLessonHomeworkPhotos } from './lesson/useLessonHomeworkPhotos'
 import { useLessonAdhocItems } from './lesson/useLessonAdhocItems'
 import { useLessonProgress } from './lesson/useLessonProgress'
 import { useLessonAttendanceRefresh } from './lesson/useLessonAttendanceRefresh'
@@ -26,6 +27,7 @@ export default function useLessonDetail(lessonId: number) {
     flushPendingStudentCellSave,
     saveDirtyChanges,
     ensureSavedForAlimtalk,
+    saveStudentCellsNow,
     hasUnsavedChanges,
     isAutoSaving,
     getDirtySnapshot,
@@ -63,6 +65,12 @@ export default function useLessonDetail(lessonId: number) {
     setStudents,
   })
 
+  const homework = useLessonHomeworkPhotos({ lessonId, lesson, students, saveStudentCellsNow })
+  const refreshHomework = homework.refresh
+  // 보내기 창 앞 질문(await) 뒤에는 그사이 새로 만든 함수를 쓴다.
+  const ensureSavedRef = useRef(ensureSavedForAlimtalk)
+  ensureSavedRef.current = ensureSavedForAlimtalk
+
   const refetchAfterAttendanceEnd = useLessonAttendanceRefresh({
     lessonId,
     setLesson,
@@ -95,25 +103,28 @@ export default function useLessonDetail(lessonId: number) {
   const addAdhocItemGuarded = useCallback<typeof addAdhocItem>(
     async (body) => {
       if (!(await confirmScheduleEdit())) return
-      return addAdhocItem(body)
+      await addAdhocItem(body)
+      void refreshHomework()
     },
-    [addAdhocItem, confirmScheduleEdit],
+    [addAdhocItem, confirmScheduleEdit, refreshHomework],
   )
 
   const removeAdhocItemGuarded = useCallback(
     async (itemId: number) => {
       if (!(await confirmScheduleEdit())) return
-      return removeAdhocItem(itemId)
+      await removeAdhocItem(itemId)
+      void refreshHomework()
     },
-    [confirmScheduleEdit, removeAdhocItem],
+    [confirmScheduleEdit, refreshHomework, removeAdhocItem],
   )
 
   const excludeTemplateItemGuarded = useCallback(
     async (templateItemId: number) => {
       if (!(await confirmScheduleEdit())) return
-      return excludeTemplateItem(templateItemId)
+      await excludeTemplateItem(templateItemId)
+      void refreshHomework()
     },
-    [confirmScheduleEdit, excludeTemplateItem],
+    [confirmScheduleEdit, excludeTemplateItem, refreshHomework],
   )
 
   const updateLessonItemOrderGuarded = useCallback<typeof updateLessonItemOrder>(
@@ -127,9 +138,10 @@ export default function useLessonDetail(lessonId: number) {
   const setItemPartialGuarded = useCallback<typeof setItemPartial>(
     async (item, isPartial) => {
       if (!(await confirmScheduleEdit())) return
-      return setItemPartial(item, isPartial)
+      await setItemPartial(item, isPartial)
+      void refreshHomework()
     },
-    [confirmScheduleEdit, setItemPartial],
+    [confirmScheduleEdit, refreshHomework, setItemPartial],
   )
 
   const addAttendanceOptionGuarded = useCallback(
@@ -188,11 +200,12 @@ export default function useLessonDetail(lessonId: number) {
               ? '학생이 이 수업 입력에 추가됐어요.'
               : `학생 ${result.added_count}명이 이 수업 입력에 추가됐어요.`,
         })
+        void refreshHomework()
       } catch {
         addToast({ variant: 'error', message: '학생 추가에 실패했어요.' })
       }
     },
-    [addToast, confirmScheduleEdit, lesson, lessonId, setLesson, setStudents],
+    [addToast, confirmScheduleEdit, lesson, lessonId, refreshHomework, setLesson, setStudents],
   )
 
   const removeStudentFromLesson = useCallback(
@@ -217,17 +230,28 @@ export default function useLessonDetail(lessonId: number) {
           variant: 'success',
           message: `'${result.student_name}' 학생을 이 수업에서만 뺐어요.`,
         })
+        void refreshHomework()
       } catch {
         addToast({ variant: 'error', message: '학생을 빼지 못했어요.' })
       }
     },
-    [addToast, confirmScheduleEdit, forgetDirtyStudent, lessonId, setLesson, setStudents],
+    [
+      addToast,
+      confirmScheduleEdit,
+      forgetDirtyStudent,
+      lessonId,
+      refreshHomework,
+      setLesson,
+      setStudents,
+    ],
   )
 
   const openAlimtalkSendModal = useCallback(async () => {
-    const ok = await ensureSavedForAlimtalk()
+    // 적용하지 않은 AI 제안이 있으면 창을 열기 전에 묻는다(사진 숙제 AI 확인 §10).
+    if (homework.enabled && (await homework.promptBeforeSend()) === 'abort') return
+    const ok = await ensureSavedRef.current()
     if (ok) alimtalkSendModal.open()
-  }, [ensureSavedForAlimtalk, alimtalkSendModal])
+  }, [alimtalkSendModal, homework.enabled, homework.promptBeforeSend])
 
   return {
     lesson,
@@ -246,6 +270,8 @@ export default function useLessonDetail(lessonId: number) {
     isAutoSaving,
     saveDirtyChanges,
     ensureSavedForAlimtalk,
+    saveStudentCellsNow,
+    homework,
     confirmScheduleEdit,
     scheduleEditOpen,
     acceptScheduleEdit,

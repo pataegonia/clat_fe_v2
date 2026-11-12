@@ -19,6 +19,7 @@ import { lessonItemRef, matchesLessonItem } from '@/lib/lessonItemRef'
 import type { ItemSource } from '@/lib/lessonItemRef'
 import { isLessonStudentInputComplete } from '@/lib/lessonProgress'
 import { isScoreUnanswered } from '@/lib/lessonScore'
+import type { HwRowView } from '@/lib/homeworkPhoto/rowState'
 import {
   tableStyle,
   tableWrapStyle,
@@ -37,6 +38,7 @@ import {
 import {
   AttendanceCell,
   CompletionCell,
+  HomeworkPhotoBadges,
   SelectCell,
   ScoreEarnedCell,
   TextInputCell,
@@ -52,6 +54,16 @@ import {
   mapFormToAdhocBody,
 } from './lessonTableUtils'
 
+/** 사진 숙제 AI 확인(기능 체험을 켰을 때만 넘긴다) */
+export type LessonTableHomework = {
+  /** 숙제 열(템플릿 항목 id). 없으면 표시를 이름 칸에 둔다. */
+  columnItemId: number | null
+  rows: Map<number, HwRowView>
+  /** 이 수업 대상 제출이 있는 학생의 숙제 칸 버튼(저장 결과를 보고 처리 기록을 남긴다) */
+  onCellChange(studentId: number, value: boolean | null): void
+  onOpenPanel(studentId: number): void
+}
+
 interface LessonTableSectionProps {
   students: LessonStudent[]
   templateItems: LessonItemDetail[]
@@ -65,6 +77,7 @@ interface LessonTableSectionProps {
   onRemoveStudent?: (studentId: number) => void | Promise<void>
   onAddAttendanceOption?: (label: string) => void
   onRemoveAttendanceOption?: (optionId: number, label: string) => void
+  homework?: LessonTableHomework
 }
 
 export default function LessonTable({
@@ -80,6 +93,7 @@ export default function LessonTable({
   onRemoveStudent,
   onAddAttendanceOption,
   onRemoveAttendanceOption,
+  homework,
 }: LessonTableSectionProps) {
   const tour = useTutorial()
   const tableRef = useRef<HTMLTableElement>(null)
@@ -239,6 +253,8 @@ export default function LessonTable({
                   partialItemRefs,
                   templateItems,
                 )
+                const hwRow = homework?.rows.get(student.id)
+                const openHwPanel = () => homework?.onOpenPanel(student.id)
                 return (
                 <tr key={student.id} className={studentRowStyle}>
                   <td className={`${getTdClassName(tdCompactStyle, student.id, focusedStudentId, isComplete)} ${nameStickyCellStyle}`}>
@@ -257,6 +273,9 @@ export default function LessonTable({
                         </button>
                       ) : null}
                     </div>
+                    {hwRow && homework?.columnItemId == null ? (
+                      <HomeworkPhotoBadges row={hwRow} onOpen={openHwPanel} />
+                    ) : null}
                   </td>
                   <td
                     className={getTdClassName(tdStyle, student.id, focusedStudentId, isComplete)}
@@ -305,19 +324,36 @@ export default function LessonTable({
                           : studentItem?.is_completed === false
                             ? '미완료'
                             : null
+                      const isHomeworkColumn =
+                        homework?.columnItemId != null &&
+                        (item.source ?? 'template') === 'template' &&
+                        item.id === homework.columnItemId
+                      const hwCellRow = isHomeworkColumn ? hwRow : undefined
                       return (
                         <td key={lessonItemRef(item)} className={tdClass} {...focusHandlers}>
                           <CompletionCell
                             value={status}
-                            onChange={(v) =>
-                              updateItem(
-                                student.id,
-                                item,
-                                studentItem?.value ?? '',
-                                v === '완료' ? true : v === '미완료' ? false : null,
-                              )
+                            suggestion={
+                              hwCellRow?.suggestion == null
+                                ? null
+                                : hwCellRow.suggestion
+                                  ? '완료'
+                                  : '미완료'
                             }
+                            aiMark={hwCellRow?.aiMark}
+                            onChange={(v) => {
+                              const next = v === '완료' ? true : v === '미완료' ? false : null
+                              // 이 수업 대상 제출이 있으면 저장 결과를 보고 기록을 남긴다.
+                              if (homework && hwCellRow?.routeClicks) {
+                                homework.onCellChange(student.id, next)
+                                return
+                              }
+                              updateItem(student.id, item, studentItem?.value ?? '', next)
+                            }}
                           />
+                          {hwCellRow ? (
+                            <HomeworkPhotoBadges row={hwCellRow} onOpen={openHwPanel} />
+                          ) : null}
                         </td>
                       )
                     }

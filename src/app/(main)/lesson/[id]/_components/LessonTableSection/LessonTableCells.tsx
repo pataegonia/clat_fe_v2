@@ -5,10 +5,15 @@ import { useLayoutEffect, useRef } from 'react'
 import type { Attendance, CompletionStatus } from '@/types/lessonStudent'
 import { joinScoreStorage, splitScoreStorage } from '@/lib/lessonScore'
 import { isCoreAttendanceLabel } from '@/lib/attendanceLabels'
+import { HW_CELL_LABELS, HW_LESSON_LABELS, photoBadgeText } from '@/lib/homeworkPhoto/labels'
+import type { HwRowView } from '@/lib/homeworkPhoto/rowState'
 import {
+  aiMarkStyle,
   cellButtonGroupStyle,
   cellButtonRecipe,
   extraCellButtonStyle,
+  hwBadgeRecipe,
+  hwBadgeRowStyle,
   scoreInputStyle,
   textCellAreaStyle,
   textCellWrapStyle,
@@ -71,26 +76,68 @@ export function AttendanceCell({
 export function CompletionCell({
   value,
   onChange,
+  suggestion = null,
+  aiMark = false,
 }: {
   value: CompletionStatus
   onChange: (v: CompletionStatus) => void
+  /** 빈 칸에 연하게 보이는 AI 제안(사진 숙제 AI 확인). 저장 전이고, 누르면 그 값이 저장된다. */
+  suggestion?: '완료' | '미완료' | null
+  /** 적용한 AI 제안 그대로인 칸 */
+  aiMark?: boolean
 }) {
+  const suggested = value === null ? suggestion : null
   return (
     <div className={cellButtonGroupStyle}>
       <button
-        className={cellButtonRecipe({ variant: value === '완료' ? 'done' : 'default' })}
+        className={cellButtonRecipe({
+          variant: value === '완료' ? 'done' : suggested === '완료' ? 'suggested' : 'default',
+        })}
         onClick={() => onChange(value === '완료' ? null : '완료')}
       >
-        완료
+        {suggested === '완료' ? HW_CELL_LABELS.suggestComplete : '완료'}
       </button>
       <button
         className={cellButtonRecipe({
-          variant: value === '미완료' ? 'undone' : 'default',
+          variant: value === '미완료' ? 'undone' : suggested === '미완료' ? 'suggested' : 'default',
         })}
         onClick={() => onChange(value === '미완료' ? null : '미완료')}
       >
-        미완료
+        {suggested === '미완료' ? HW_CELL_LABELS.suggestIncomplete : '미완료'}
       </button>
+      {aiMark ? <span className={aiMarkStyle}>{HW_CELL_LABELS.aiMark}</span> : null}
+    </div>
+  )
+}
+
+/**
+ * 사진 숙제 표시: '사진 2 · 9/12', '확인 필요'(여럿이면 '확인 필요 3'), 'AI 확인 중'.
+ * 숙제 칸 버튼 아래(숙제 칸이 없으면 이름 칸)에 두고, 누르면 그 학생의 옆 창이 열린다.
+ */
+export function HomeworkPhotoBadges({ row, onOpen }: { row: HwRowView; onOpen: () => void }) {
+  const showPhoto = row.ownSubmissionId !== null
+  const showReview = row.reviewCount > 0
+  const showChecking = row.ownState === 'CHECKING'
+  if (!showPhoto && !showReview && !showChecking) return null
+  return (
+    <div className={hwBadgeRowStyle}>
+      {showPhoto ? (
+        <button type="button" className={hwBadgeRecipe({ tone: 'photo' })} onClick={onOpen}>
+          {photoBadgeText(row.photoCount, row.completeness)}
+        </button>
+      ) : null}
+      {showReview ? (
+        <button type="button" className={hwBadgeRecipe({ tone: 'review' })} onClick={onOpen}>
+          {row.reviewCount > 1
+            ? `${HW_LESSON_LABELS.review} ${row.reviewCount}`
+            : HW_LESSON_LABELS.review}
+        </button>
+      ) : null}
+      {showChecking ? (
+        <button type="button" className={hwBadgeRecipe({ tone: 'checking' })} onClick={onOpen}>
+          {HW_LESSON_LABELS.checking}
+        </button>
+      ) : null}
     </div>
   )
 }

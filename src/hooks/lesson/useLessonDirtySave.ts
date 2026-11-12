@@ -23,7 +23,7 @@ import {
   parseStudentCellKey,
   studentCellKey,
 } from '@/lib/lessonPartialSave'
-import { itemRef } from '@/lib/lessonItemRef'
+import { itemRef, type ItemSource } from '@/lib/lessonItemRef'
 import { queryKeys } from '@/lib/queryKeys'
 
 type SetState<T> = Dispatch<SetStateAction<T>>
@@ -89,6 +89,71 @@ function clearDirtyFromBody(
     }
     clearCells(keys)
   }
+}
+
+export type StudentCellChange = {
+  studentId: number
+  source: ItemSource
+  itemId: number
+  isCompleted: boolean | null
+  /**
+   * AI 제안 적용: 저장 직전에 칸이 비어 있을 때만 쓴다.
+   * 그사이 선생님이 적은 값은 바꾸지 않는다(§2, §10).
+   */
+  onlyIfBlank?: boolean
+}
+
+export type CellSaveOutcome =
+  /**
+   * settled = changes the table and the server now hold:
+   * written by this call, or already equal before it
+   */
+  | { status: 'success'; settled: StudentCellChange[] }
+  | { status: 'failed' }
+  | { status: 'cancelled' }
+
+function changeKey(change: StudentCellChange): string {
+  return studentCellKey(change.studentId, change.source, change.itemId)
+}
+
+/** 칸 값(is_completed)만 바꾼 새 표. 숙제 열 메모(value)는 그대로다. */
+function applyCellChanges(rows: LessonStudent[], changes: StudentCellChange[]): LessonStudent[] {
+  const byKey = new Map(changes.map((change) => [changeKey(change), change]))
+  return rows.map((row) => {
+    if (!row.items.some((item) => byKey.has(studentCellKey(row.id, item.source, item.item_id)))) {
+      return row
+    }
+    return {
+      ...row,
+      items: row.items.map((item) => {
+        const change = byKey.get(studentCellKey(row.id, item.source, item.item_id))
+        return change ? { ...item, is_completed: change.isCompleted } : item
+      }),
+    }
+  })
+}
+
+/** 저장 실패: 이 호출이 넣은 값이 아직 그대로인 칸만 이전 값으로 돌린다. */
+function revertCellChanges(
+  rows: LessonStudent[],
+  changes: StudentCellChange[],
+  previous: Map<string, boolean | null | undefined>,
+): LessonStudent[] {
+  const byKey = new Map(changes.map((change) => [changeKey(change), change]))
+  return rows.map((row) => {
+    if (!row.items.some((item) => byKey.has(studentCellKey(row.id, item.source, item.item_id)))) {
+      return row
+    }
+    return {
+      ...row,
+      items: row.items.map((item) => {
+        const key = studentCellKey(row.id, item.source, item.item_id)
+        const change = byKey.get(key)
+        if (!change || (item.is_completed ?? null) !== change.isCompleted) return item
+        return { ...item, is_completed: previous.get(key) }
+      }),
+    }
+  })
 }
 
 /**
@@ -503,6 +568,100 @@ export function useLessonDirtySave(lessonId: number) {
     removeDirtyCells,
   ])
 
+  /**
+   * 바꿀 숙제 칸들을 바로 저장하고 결과를 돌려준다(사진 숙제 AI 확인 §10).
+   * 기존 자동 저장은 그대로다.
+   * - 예약 확인 창을 먼저 거친다(취소 → 'cancelled', 표는 기존 rejectScheduleEdit가 되돌린다).
+   * - 칸은 확인 창을 지난 뒤의 표 상태로 다시 본다.
+   *   onlyIfBlank 변경은 그때 칸에 값이 있으면 빠진다.
+   * - 칸 값이 이미 같으면 보내지 않고 settled에 넣는다. 처리 기록은 settled에 든 것만 남긴다.
+   * - 실패하면 이 함수가 바꾼 칸만 되돌리고 'failed'(토스트는 부른 쪽이 띄운다).
+   */
+  const saveStudentCellsNow = useCallback(
+    async (changes: StudentCellChange[]): Promise<CellSaveOutcome> => {
+      if (!lessonRef.current) return { status: 'failed' }
+      if (!(await confirmScheduleEdit())) return { status: 'cancelled' }
+
+      // 확인 창이 열린 동안에도 5초 확인이 저장 안 한 칸에 서버 값을 넣으므로 표는 여기서 읽는다.
+      const lesson = lessonRef.current
+      if (!lesson) return { status: 'failed' }
+      const current = studentsRef.current
+      const rowsById = new Map(current.map((row) => [row.id, row]))
+
+      const already: StudentCellChange[] = []
+      const pending: StudentCellChange[] = []
+      const previous = new Map<string, boolean | null | undefined>()
+      const seen = new Set<string>()
+      for (const change of changes) {
+        const key = changeKey(change)
+        if (seen.has(key)) continue
+        seen.add(key)
+        const cell = rowsById
+          .get(change.studentId)
+          ?.items.find((item) => item.source === change.source && item.item_id === change.itemId)
+        if (!cell) continue
+        const now = cell.is_completed ?? null
+        if (now === change.isCompleted) {
+          already.push(change)
+          continue
+        }
+        // onlyIfBlank인데 칸에 값이 있으면 선생님이 적은 값이다. 바꾸지 않는다.
+        if (change.onlyIfBlank && now !== null) continue
+        pending.push(change)
+        previous.set(key, cell.is_completed)
+      }
+      if (pending.length === 0) return { status: 'success', settled: already }
+
+      const keys = pending.map(changeKey)
+      const wasDirty = new Set(keys.filter((key) => dirtyStudentCellsRef.current.has(key)))
+      // ref는 렌더 때만 새로 들어오므로 본문은 여기서 만든 표로 짓는다.
+      const nextRows = applyCellChanges(current, pending)
+      setStudentsRef.current((prev) => applyCellChanges(prev, pending))
+      // 저장하는 동안 5초 확인이 이 칸들을 서버 값으로 덮지 않게 한다.
+      markStudentCellsDirty(keys)
+
+      const rollback = () => {
+        setStudentsRef.current((prev) => revertCellChanges(prev, pending, previous))
+        removeDirtyCells(keys.filter((key) => !wasDirty.has(key)))
+      }
+
+      const body = buildLessonUpdateBodyForTargets({
+        commonIds: [],
+        studentCells: keys,
+        commonValues: commonValuesRef.current,
+        students: nextRows,
+        lessonItems: lesson.items,
+        status: 'SAVED',
+      })
+      if (!body) {
+        rollback()
+        return { status: 'failed' }
+      }
+
+      setAutoSavingCount((c) => c + 1)
+      try {
+        const saved = await lessonService.updateLesson(lessonId, body)
+        clearDirtyFromBody(body, removeDirtyCommon, removeDirtyCells)
+        applySavedLesson(saved, setLessonRef.current, addToast, queryClient)
+        return { status: 'success', settled: [...already, ...pending] }
+      } catch {
+        rollback()
+        return { status: 'failed' }
+      } finally {
+        setAutoSavingCount((c) => Math.max(0, c - 1))
+      }
+    },
+    [
+      lessonId,
+      addToast,
+      confirmScheduleEdit,
+      queryClient,
+      markStudentCellsDirty,
+      removeDirtyCommon,
+      removeDirtyCells,
+    ],
+  )
+
   const hasUnsavedChanges = dirtyCommonIds.size > 0 || dirtyStudentCells.size > 0
 
   const getDirtySnapshot = useCallback(
@@ -526,6 +685,7 @@ export function useLessonDirtySave(lessonId: number) {
     flushPendingStudentCellSave,
     saveDirtyChanges,
     ensureSavedForAlimtalk,
+    saveStudentCellsNow,
     hasUnsavedChanges,
     isAutoSaving: autoSavingCount > 0,
     getDirtySnapshot,

@@ -129,6 +129,15 @@ export const cellButtonRecipe = recipe({
         backgroundColor: colors.primary500,
         color: colors.white,
       },
+      /** 빈 숙제 칸의 AI 제안(연하게, 아직 저장 전). 'AI 미완료'가 44px에 들어가지 않아 넓힌다. */
+      suggested: {
+        backgroundColor: colors.white,
+        color: colors.gray500,
+        border: `1px dashed ${colors.gray300}`,
+        width: 'auto',
+        minWidth: '44px',
+        paddingInline: '6px',
+      },
     },
   },
   defaultVariants: {
@@ -141,6 +150,88 @@ export const extraCellButtonStyle = style({
   minWidth: '44px',
   paddingLeft: '8px',
   paddingRight: '8px',
+})
+
+/** 적용한 AI 제안 그대로인 숙제 칸의 작은 'AI' 표시 */
+export const aiMarkStyle = style({
+  display: 'inline-flex',
+  alignItems: 'center',
+  alignSelf: 'center',
+  height: '18px',
+  padding: '0 4px',
+  borderRadius: '4px',
+  backgroundColor: colors.primary50,
+  color: colors.primary500,
+  fontSize: fontStyles.labelSm.fontSize,
+  fontWeight: fontStyles.titleSm.fontWeight,
+  lineHeight: '140%',
+  letterSpacing: '-0.03em',
+})
+
+/** 숙제 칸 아래(숙제 칸이 없으면 이름 칸 아래)의 사진 수·확인 필요 표시. 누르면 옆 창이 열린다. */
+export const hwBadgeRowStyle = style({
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: '4px',
+  marginTop: '4px',
+})
+
+export const hwBadgeRecipe = recipe({
+  base: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    height: '20px',
+    padding: '0 6px',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: fontStyles.labelSm.fontSize,
+    fontWeight: fontStyles.labelSm.fontWeight,
+    lineHeight: '140%',
+    letterSpacing: '-0.03em',
+    whiteSpace: 'nowrap',
+    cursor: 'pointer',
+    transition: 'background-color 0.15s',
+    '@media': {
+      [media.phone]: {
+        height: '28px',
+      },
+    },
+  },
+  variants: {
+    tone: {
+      photo: {
+        backgroundColor: colors.gray50,
+        color: colors.gray700,
+        selectors: {
+          '&:hover': {
+            backgroundColor: colors.gray75,
+          },
+        },
+      },
+      review: {
+        backgroundColor: colors.warning50,
+        color: colors.gray900,
+        boxShadow: `inset 0 0 0 1px ${colors.warning200}`,
+        selectors: {
+          '&:hover': {
+            backgroundColor: colors.warning200,
+          },
+        },
+      },
+      checking: {
+        backgroundColor: colors.primary50,
+        color: colors.primary500,
+        selectors: {
+          '&:hover': {
+            backgroundColor: colors.primary100,
+          },
+        },
+      },
+    },
+  },
+  defaultVariants: {
+    tone: 'photo',
+  },
 })
 
 export const cellEditableStyle = style({
