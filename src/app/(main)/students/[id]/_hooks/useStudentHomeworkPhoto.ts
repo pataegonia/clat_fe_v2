@@ -4,6 +4,9 @@ import { hwKeys } from '@/lib/homeworkPhoto/queryKeys'
 import { useToastStore } from '@/stores/toastStore'
 import type { HwConsentBody, HwStudentState } from '@/types/homeworkPhoto'
 
+/** 방금 만든 링크의 주소. 화면은 이 링크가 살아 있는 동안만 보인다. */
+export type CreatedLinkUrl = { linkId: number; url: string }
+
 export type StudentHomeworkPhoto = {
   /** 동의와 링크 상태. 아직 못 읽었거나 읽지 못하면 null이고, 그때 카드는 보이지 않는다. */
   state: HwStudentState | null
@@ -11,8 +14,8 @@ export type StudentHomeworkPhoto = {
   busy: boolean
   /** 동의 기록·철회. 성공하면 true */
   setConsent: (body: HwConsentBody) => Promise<boolean>
-  /** 링크를 만들고 학생에게 보낼 주소를 돌려준다. 실패하면 null */
-  createLink: () => Promise<string | null>
+  /** 링크를 만들고 학생에게 보낼 주소와 그 링크 id를 돌려준다. 실패하면 null */
+  createLink: () => Promise<CreatedLinkUrl | null>
   /** 링크 끊기. 성공하면 true */
   revokeLink: () => Promise<boolean>
 }
@@ -68,11 +71,14 @@ export function useStudentHomeworkPhoto(studentId: number): StudentHomeworkPhoto
     onSettled: refresh,
   })
 
-  const createLink = async (): Promise<string | null> => {
+  const createLink = async (): Promise<CreatedLinkUrl | null> => {
     try {
       const created = await create.mutateAsync()
       create.reset()
-      return created.url ?? `${window.location.origin}${created.path}`
+      return {
+        linkId: created.link.id,
+        url: created.url ?? `${window.location.origin}${created.path}`,
+      }
     } catch {
       return null
     }

@@ -8,7 +8,7 @@ import { useToastStore } from '@/stores/toastStore'
 import { HW_LINK_BLOCKED_LABELS } from '@/lib/homeworkPhoto/labels'
 import type { HwLinkStatus } from '@/types/homeworkPhoto'
 import * as styles from '../studentDashboard.css'
-import type { StudentHomeworkPhoto } from '../_hooks/useStudentHomeworkPhoto'
+import type { CreatedLinkUrl, StudentHomeworkPhoto } from '../_hooks/useStudentHomeworkPhoto'
 
 const NEED_CONSENT_HINT = '학부모 사진 제출 동의를 기록하면 링크를 만들 수 있어요.'
 
@@ -105,19 +105,21 @@ type CardProps = { homeworkPhoto: StudentHomeworkPhoto }
  */
 export function HomeworkPhotoLinkCard({ homeworkPhoto }: CardProps) {
   const { state, busy, createLink, revokeLink } = homeworkPhoto
-  const [shownUrl, setShownUrl] = useState<string | null>(null)
+  const [created, setCreated] = useState<CreatedLinkUrl | null>(null)
   const [confirm, setConfirm] = useState<ConfirmKind | null>(null)
   if (!state) return null
   const { enabled, link } = state
   if (!enabled && link === null) return null
   const canCreate = state.effective.upload
+  // 만든 주소는 그 링크가 지금 링크이고 살아 있을 때만 보인다(동의 철회·다른 탭에서 다시 만들기로 끊긴 주소를 보내지 않게).
+  const shownUrl = created && link?.id === created.linkId && link.alive ? created.url : null
 
   const create = async () => {
-    const url = await createLink()
-    if (url) setShownUrl(url)
+    const result = await createLink()
+    if (result) setCreated(result)
   }
   const revoke = async () => {
-    if (await revokeLink()) setShownUrl(null)
+    if (await revokeLink()) setCreated(null)
   }
   const onConfirm = () => {
     const kind = confirm

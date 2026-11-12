@@ -156,6 +156,91 @@ function revertCellChanges(
   })
 }
 
+type ChangeSplit = {
+  /** 칸 값이 이미 같다(보내지 않는다) */
+  already: StudentCellChange[]
+  /** 저장할 변경 */
+  pending: StudentCellChange[]
+  /** pending 칸의 지금 값(실패하면 되돌린다) */
+  previous: Map<string, boolean | null | undefined>
+}
+
+/** 표에서 변경마다 이미 같은지, 저장할지, 건너뛸지(onlyIfBlank인데 칸에 값이 있다) 나눈다. */
+function splitChanges(rows: LessonStudent[], changes: StudentCellChange[]): ChangeSplit {
+  const rowsById = new Map(rows.map((row) => [row.id, row]))
+  const already: StudentCellChange[] = []
+  const pending: StudentCellChange[] = []
+  const previous = new Map<string, boolean | null | undefined>()
+  const seen = new Set<string>()
+  for (const change of changes) {
+    const key = changeKey(change)
+    if (seen.has(key)) continue
+    seen.add(key)
+    const cell = rowsById
+      .get(change.studentId)
+      ?.items.find((item) => item.source === change.source && item.item_id === change.itemId)
+    if (!cell) continue
+    const now = cell.is_completed ?? null
+    if (now === change.isCompleted) {
+      already.push(change)
+      continue
+    }
+    // onlyIfBlank인데 칸에 값이 있으면 선생님이 적은 값이다. 바꾸지 않는다.
+    if (change.onlyIfBlank && now !== null) continue
+    pending.push(change)
+    previous.set(key, cell.is_completed)
+  }
+  return { already, pending, previous }
+}
+
+/**
+ * 예약 확인 창 취소: 저장 안 한 칸(dirty)만 창을 열 때의 값으로 돌린다.
+ * 창이 열린 동안 5초 확인이 다른 칸에 넣은 서버 값은 그대로 둔다. 표 전체를 창을 열 때로 돌리면
+ * 그 값이 사라지고, updated_at은 이미 앞으로 가 있어 5초 확인이 다시 받아 오지 않는다.
+ */
+function revertDirtyStudentCells(
+  rows: LessonStudent[],
+  baseline: LessonStudent[],
+  dirtyKeys: ReadonlySet<string>,
+): LessonStudent[] {
+  if (dirtyKeys.size === 0) return rows
+  const baselineItems = new Map<string, LessonStudent['items'][number]>()
+  for (const row of baseline) {
+    for (const item of row.items) {
+      const key = studentCellKey(row.id, item.source, item.item_id)
+      if (dirtyKeys.has(key)) baselineItems.set(key, item)
+    }
+  }
+  return rows.map((row) => {
+    if (
+      !row.items.some((item) => dirtyKeys.has(studentCellKey(row.id, item.source, item.item_id)))
+    ) {
+      return row
+    }
+    return {
+      ...row,
+      items: row.items.map(
+        (item) => baselineItems.get(studentCellKey(row.id, item.source, item.item_id)) ?? item,
+      ),
+    }
+  })
+}
+
+/** 예약 확인 창 취소: 저장 안 한 공통 칸만 창을 열 때의 값으로 돌린다(위와 같은 까닭). */
+function revertDirtyCommon(
+  values: Record<string, string>,
+  baseline: Record<string, string>,
+  dirtyIds: ReadonlySet<string>,
+): Record<string, string> {
+  if (dirtyIds.size === 0) return values
+  const next = { ...values }
+  for (const id of dirtyIds) {
+    if (Object.hasOwn(baseline, id)) next[id] = baseline[id]
+    else delete next[id]
+  }
+  return next
+}
+
 /**
  * Dirty tracking, debounced autosave, and explicit save for lesson detail.
  * Call bindFormState(...) each render after useLessonLoad.
@@ -313,8 +398,12 @@ export function useLessonDirtySave(lessonId: number) {
 
   const rejectScheduleEdit = useCallback(() => {
     clearAllDebounceTimers()
-    setCommonValuesRef.current(baselineCommonRef.current)
-    setStudentsRef.current(baselineStudentsRef.current)
+    const dirtyCommon = dirtyCommonIdsRef.current
+    const dirtyCells = dirtyStudentCellsRef.current
+    const baselineCommon = baselineCommonRef.current
+    const baselineStudents = baselineStudentsRef.current
+    setCommonValuesRef.current((prev) => revertDirtyCommon(prev, baselineCommon, dirtyCommon))
+    setStudentsRef.current((prev) => revertDirtyStudentCells(prev, baselineStudents, dirtyCells))
     setDirtyCommonIds(new Set())
     setDirtyStudentCells(new Set())
     setScheduleEditOpen(false)
@@ -571,7 +660,8 @@ export function useLessonDirtySave(lessonId: number) {
   /**
    * 바꿀 숙제 칸들을 바로 저장하고 결과를 돌려준다(사진 숙제 AI 확인 §10).
    * 기존 자동 저장은 그대로다.
-   * - 예약 확인 창을 먼저 거친다(취소 → 'cancelled', 표는 기존 rejectScheduleEdit가 되돌린다).
+   * - 저장할 칸이 없으면(이미 같은 값, 또는 onlyIfBlank인데 값이 있다) 예약 확인 창 없이 끝낸다.
+   * - 있으면 예약 확인 창을 거친다(취소 → 'cancelled', rejectScheduleEdit가 저장 안 한 칸만 되돌린다).
    * - 칸은 확인 창을 지난 뒤의 표 상태로 다시 본다.
    *   onlyIfBlank 변경은 그때 칸에 값이 있으면 빠진다.
    * - 칸 값이 이미 같으면 보내지 않고 settled에 넣는다. 처리 기록은 settled에 든 것만 남긴다.
@@ -580,36 +670,15 @@ export function useLessonDirtySave(lessonId: number) {
   const saveStudentCellsNow = useCallback(
     async (changes: StudentCellChange[]): Promise<CellSaveOutcome> => {
       if (!lessonRef.current) return { status: 'failed' }
+      const early = splitChanges(studentsRef.current, changes)
+      if (early.pending.length === 0) return { status: 'success', settled: early.already }
       if (!(await confirmScheduleEdit())) return { status: 'cancelled' }
 
-      // 확인 창이 열린 동안에도 5초 확인이 저장 안 한 칸에 서버 값을 넣으므로 표는 여기서 읽는다.
+      // 확인 창이 열린 동안에도 5초 확인이 저장 안 한 칸에 서버 값을 넣으므로 표는 여기서 다시 읽는다.
       const lesson = lessonRef.current
       if (!lesson) return { status: 'failed' }
       const current = studentsRef.current
-      const rowsById = new Map(current.map((row) => [row.id, row]))
-
-      const already: StudentCellChange[] = []
-      const pending: StudentCellChange[] = []
-      const previous = new Map<string, boolean | null | undefined>()
-      const seen = new Set<string>()
-      for (const change of changes) {
-        const key = changeKey(change)
-        if (seen.has(key)) continue
-        seen.add(key)
-        const cell = rowsById
-          .get(change.studentId)
-          ?.items.find((item) => item.source === change.source && item.item_id === change.itemId)
-        if (!cell) continue
-        const now = cell.is_completed ?? null
-        if (now === change.isCompleted) {
-          already.push(change)
-          continue
-        }
-        // onlyIfBlank인데 칸에 값이 있으면 선생님이 적은 값이다. 바꾸지 않는다.
-        if (change.onlyIfBlank && now !== null) continue
-        pending.push(change)
-        previous.set(key, cell.is_completed)
-      }
+      const { already, pending, previous } = splitChanges(current, changes)
       if (pending.length === 0) return { status: 'success', settled: already }
 
       const keys = pending.map(changeKey)

@@ -35,6 +35,8 @@ export function useHomeworkPhotoBlob(assetId: string | null): HomeworkPhotoBlob 
     return () => {
       cancelled = true
       if (url) URL.revokeObjectURL(url)
+      // 놓은 URL이나 지난 실패가 같은 사진으로 돌아왔을 때(A → B → A) 보이지 않게 비운다.
+      setLoaded(null)
     }
   }, [assetId])
 

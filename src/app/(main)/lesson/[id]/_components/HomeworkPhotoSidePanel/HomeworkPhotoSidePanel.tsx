@@ -126,12 +126,14 @@ function reasonLines(sub: HwSubmissionView, own: boolean, row: HwRowView | null)
     sub.resolution === 'RETURNED' && sub.return_reason
       ? `${HW_ACTION_LABELS.return} · ${sub.return_reason}`
       : undefined
-  return [
+  const lines = [
     carry,
     extra,
     ...sub.reasons.map((reason) => reasonText(reason, sub.photo_count)),
     returned,
   ].filter((line): line is string => Boolean(line))
+  // 늦게 낸 제출은 넘어온 까닭과 이유가 같은 글이다. 한 번만 보인다.
+  return [...new Set(lines)]
 }
 
 /** 서버가 정한 actions 대로만 버튼을 보인다. 완료·미완료는 이 표에 숙제 칸이 있을 때만이다. */

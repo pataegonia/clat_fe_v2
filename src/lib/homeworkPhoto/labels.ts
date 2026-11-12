@@ -141,6 +141,8 @@ export const HW_EXTRA_REASON_LABELS: Record<ExtraReasonCode, string> = {
 
 /** 다른 수업에서 넘어온 까닭. 따로 적는 것만 둔다(나머지는 제출의 이유로 보인다). */
 export const HW_CARRY_REASON_LABELS: Partial<Record<HwCarryReason, string>> = {
+  // 선생님이 지난 날짜로 옮긴 제출은 이유에 LATE가 없어 넘어온 까닭으로 보인다.
+  LATE: '늦게 낸 지난 숙제',
   NOT_ON_ROSTER: '수업 명단에 없음',
   NO_TARGET_LESSON: '그 날짜 수업 기록 없음',
 }
